@@ -1,0 +1,4 @@
+activate_menu_theme     Activate rscodeio styling in file menu.
+deactivate_menu_theme   Deactivate rscodeio style in file menu.
+install_theme           Install the rscodeio theme
+uninstall_theme         Uninstall the rscodeio theme

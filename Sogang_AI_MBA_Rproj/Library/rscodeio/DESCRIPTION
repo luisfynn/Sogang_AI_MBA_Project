@@ -1,0 +1,27 @@
+Package: rscodeio
+Title: A VSCode skin for RStudio
+Version: 0.1.0
+Authors@R: c(person("Anthony", "North", email = "anthony.jl.north@gmail.com", role = c("aut", "cre")),
+             person("Miles", "McBain", email = "miles.mcbain@gmail.com", role = "ctb"))
+Description: It really just modifies RStudio presentation.
+Depends: R (>= 3.3.0)
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports: fs, purrr, rstudioapi
+RoxygenNote: 7.1.1
+RemoteType: github
+RemoteHost: api.github.com
+RemoteRepo: rscodeio
+RemoteUsername: anthonynorth
+RemoteRef: HEAD
+RemoteSha: 88a1a373d64f0bd81b6730eb6fa005fd0baa9078
+GithubRepo: rscodeio
+GithubUsername: anthonynorth
+GithubRef: HEAD
+GithubSHA1: 88a1a373d64f0bd81b6730eb6fa005fd0baa9078
+NeedsCompilation: no
+Packaged: 2023-12-27 00:15:11 UTC; luisf
+Author: Anthony North [aut, cre],
+  Miles McBain [ctb]
+Maintainer: Anthony North <anthony.jl.north@gmail.com>
+Built: R 4.3.1; ; 2023-12-27 00:15:14 UTC; windows
