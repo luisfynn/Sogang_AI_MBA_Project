@@ -1,0 +1,402 @@
+<html>
+<head>
+<title>HW2_Report.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #8c8c8c; font-style: italic;}
+.s1 { color: #080808;}
+.s2 { color: #0033b3;}
+.s3 { color: #067d17;}
+.s4 { color: #1750eb;}
+.s5 { color: #0037a6;}
+.ln { color: #adadad; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#ffffff">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+HW2_Report.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">#1.네이버 경제 부동산 의 상위 10 건에 대한 뉴스 본문을 이용하여 아래 물음에 답하시오</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">#(1) 10건의 뉴스 제목 과 URL 을 보고 하시오</span>
+<a name="l3"><span class="ln">3    </span></a><span class="s2">import </span><span class="s1">requests</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s2">from </span><span class="s1">bs4 </span><span class="s2">import </span><span class="s1">BeautifulSoup</span>
+<a name="l5"><span class="ln">5    </span></a><span class="s2">import </span><span class="s1">bs4.element</span>
+<a name="l6"><span class="ln">6    </span></a><span class="s2">import </span><span class="s1">datetime</span>
+<a name="l7"><span class="ln">7    </span></a><span class="s2">import </span><span class="s1">lxml</span>
+<a name="l8"><span class="ln">8    </span></a>
+<a name="l9"><span class="ln">9    </span></a><span class="s2">from </span><span class="s1">stock </span><span class="s2">import </span><span class="s1">smtp_info, send_email</span>
+<a name="l10"><span class="ln">10   </span></a>
+<a name="l11"><span class="ln">11   </span></a><span class="s0"># 본인 PC에서 User-Agent 정보 검색해서 얻은 값 입력</span>
+<a name="l12"><span class="ln">12   </span></a><span class="s1">UserAgentKey = </span><span class="s3">'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.67'</span>
+<a name="l13"><span class="ln">13   </span></a>
+<a name="l14"><span class="ln">14   </span></a><span class="s0">#뉴스 크롤링 원할화 작업</span>
+<a name="l15"><span class="ln">15   </span></a><span class="s2">def </span><span class="s1">get_soup_obj(url):</span>
+<a name="l16"><span class="ln">16   </span></a>    <span class="s1">head = {</span>
+<a name="l17"><span class="ln">17   </span></a>        <span class="s3">'User-Agent'</span><span class="s1">: UserAgentKey</span>
+<a name="l18"><span class="ln">18   </span></a>    <span class="s1">}</span>
+<a name="l19"><span class="ln">19   </span></a>    <span class="s1">res = requests.get(url, headers=head)</span>
+<a name="l20"><span class="ln">20   </span></a>    <span class="s1">soup = BeautifulSoup(res.text, </span><span class="s3">'lxml'</span><span class="s1">)</span>
+<a name="l21"><span class="ln">21   </span></a>    <span class="s2">return </span><span class="s1">soup</span>
+<a name="l22"><span class="ln">22   </span></a>
+<a name="l23"><span class="ln">23   </span></a><span class="s0"># 경제-부동산 뉴스 상위 10건 title과 url추출 함수</span>
+<a name="l24"><span class="ln">24   </span></a><span class="s0"># naver 사이트에서 f12키 누름</span>
+<a name="l25"><span class="ln">25   </span></a><span class="s2">def </span><span class="s1">get_top_news_info(area):</span>
+<a name="l26"><span class="ln">26   </span></a>    <span class="s1">soup = get_soup_obj(area)</span>
+<a name="l27"><span class="ln">27   </span></a>    <span class="s1">news_list = []</span>
+<a name="l28"><span class="ln">28   </span></a>    <span class="s1">list10 = soup.find(</span><span class="s3">'ul'</span><span class="s1">, class_=</span><span class="s3">'type06_headline'</span><span class="s1">).find_all(</span><span class="s3">&quot;li&quot;</span><span class="s1">, limit=</span><span class="s4">10</span><span class="s1">)  </span><span class="s0"># 경제-부동산 뉴스 상위 10건</span>
+<a name="l29"><span class="ln">29   </span></a>    <span class="s2">for </span><span class="s1">li </span><span class="s2">in </span><span class="s1">list10:</span>
+<a name="l30"><span class="ln">30   </span></a>        <span class="s1">news_info = {</span>
+<a name="l31"><span class="ln">31   </span></a>            <span class="s3">&quot;title&quot;</span><span class="s1">: li.img.attrs.get(</span><span class="s3">'alt'</span><span class="s1">) </span><span class="s2">if </span><span class="s1">li.img </span><span class="s2">else </span><span class="s1">li.a.text,</span>
+<a name="l32"><span class="ln">32   </span></a>            <span class="s3">&quot;news_url&quot;</span><span class="s1">: li.a.attrs.get(</span><span class="s3">'href'</span><span class="s1">),</span>
+<a name="l33"><span class="ln">33   </span></a>        <span class="s1">}</span>
+<a name="l34"><span class="ln">34   </span></a>        <span class="s1">news_list.append(news_info)</span>
+<a name="l35"><span class="ln">35   </span></a>    <span class="s2">return </span><span class="s1">news_list</span>
+<a name="l36"><span class="ln">36   </span></a>
+<a name="l37"><span class="ln">37   </span></a><span class="s0"># 경제-부동산 뉴스 url</span>
+<a name="l38"><span class="ln">38   </span></a><span class="s1">area_url = </span><span class="s3">&quot;https://news.naver.com/main/list.naver?mode=LS2D&amp;mid=shm&amp;sid1=101&amp;sid2=260&quot;</span>
+<a name="l39"><span class="ln">39   </span></a><span class="s1">get_top_news_info(area_url)</span>
+<a name="l40"><span class="ln">40   </span></a>
+<a name="l41"><span class="ln">41   </span></a><span class="s0">######################################################################################################################</span>
+<a name="l42"><span class="ln">42   </span></a><span class="s0">###################################################결과물 추가##########################################################</span>
+<a name="l43"><span class="ln">43   </span></a><span class="s1">[{</span><span class="s3">'title'</span><span class="s1">: </span><span class="s3">'혼탁해진 압구정 재건축…서울시마저 설계전쟁 참전'</span><span class="s1">, </span><span class="s3">'news_url'</span><span class="s1">: </span><span class="s3">'https://n.news.naver.com/mnews/article/031/0000758221?sid=101'</span><span class="s1">},</span>
+<a name="l44"><span class="ln">44   </span></a> <span class="s1">{</span><span class="s3">'title'</span><span class="s1">: </span><span class="s3">'불황에도 집값 반등 기대감이 커지는 이유…‘역전세난’ 최악은 없다 [박일한의 住土피아]'</span><span class="s1">, </span><span class="s3">'news_url'</span><span class="s1">: </span><span class="s3">'https://n.news.naver.com/mnews/article/016/0002168219?sid=101'</span><span class="s1">},</span>
+<a name="l45"><span class="ln">45   </span></a> <span class="s1">{</span><span class="s3">'title'</span><span class="s1">: </span><span class="s3">'원희룡 &quot;이재명, 국정농단 운운 안타까워…망상 멈추고 공개토론 場 나와라&quot;'</span><span class="s1">, </span><span class="s3">'news_url'</span><span class="s1">: </span><span class="s3">'https://n.news.naver.com/mnews/article/421/0006921328?sid=101'</span><span class="s1">},</span>
+<a name="l46"><span class="ln">46   </span></a> <span class="s1">{</span><span class="s3">'title'</span><span class="s1">: </span><span class="s3">'&quot;국평 25억 신축&quot; 개포자이, 국지성 폭우로 또 침수'</span><span class="s1">, </span><span class="s3">'news_url'</span><span class="s1">: </span><span class="s3">'https://n.news.naver.com/mnews/article/029/0002812771?sid=101'</span><span class="s1">},</span>
+<a name="l47"><span class="ln">47   </span></a> <span class="s1">{</span><span class="s3">'title'</span><span class="s1">: </span><span class="s3">'‘과열경쟁’ 압구정3구역 건축사무소... 서울시, 이례적 고발 조치'</span><span class="s1">, </span><span class="s3">'news_url'</span><span class="s1">: </span><span class="s3">'https://n.news.naver.com/mnews/article/366/0000915914?sid=101'</span><span class="s1">},</span>
+<a name="l48"><span class="ln">48   </span></a> <span class="s1">{</span><span class="s3">'title'</span><span class="s1">: </span><span class="s3">'</span><span class="s5">\n\t\t\t\t\t\t\t\t </span><span class="s3">&quot;정자교 붕괴는 콘크리트·철근 부착력 상실 탓&quot;</span><span class="s5">\n\t\t\t\t\t\t\t\t</span><span class="s3">'</span><span class="s1">, </span><span class="s3">'news_url'</span><span class="s1">: </span><span class="s3">'https://n.news.naver.com/mnews/article/015/0004866851?sid=101'</span><span class="s1">},</span>
+<a name="l49"><span class="ln">49   </span></a> <span class="s1">{</span><span class="s3">'title'</span><span class="s1">: </span><span class="s3">'국토부 청사 앞 </span><span class="s5">\'</span><span class="s3">화환 행렬</span><span class="s5">\'</span><span class="s3">, 원희룡 &quot;응원 감사합니다&quot; 반응'</span><span class="s1">, </span><span class="s3">'news_url'</span><span class="s1">: </span><span class="s3">'https://n.news.naver.com/mnews/article/018/0005527840?sid=101'</span><span class="s1">},</span>
+<a name="l50"><span class="ln">50   </span></a> <span class="s1">{</span><span class="s3">'title'</span><span class="s1">: </span><span class="s3">'바이러스 철벽 봉쇄… 아파트는 우리 가족 ‘감염병 수문장’'</span><span class="s1">, </span><span class="s3">'news_url'</span><span class="s1">: </span><span class="s3">'https://n.news.naver.com/mnews/article/005/0001622702?sid=101'</span><span class="s1">},</span>
+<a name="l51"><span class="ln">51   </span></a> <span class="s1">{</span><span class="s3">'title'</span><span class="s1">: </span><span class="s3">'1:1 생중계 토론 덕… 한토신, 동의서 징구 2주만에 `뚝딱`'</span><span class="s1">, </span><span class="s3">'news_url'</span><span class="s1">: </span><span class="s3">'https://n.news.naver.com/mnews/article/029/0002812756?sid=101'</span><span class="s1">},</span>
+<a name="l52"><span class="ln">52   </span></a> <span class="s1">{</span><span class="s3">'title'</span><span class="s1">: </span><span class="s3">&quot;'신고가 속출' 강남 아파트…압구정 한양 64억·반래퍼 50억&quot;</span><span class="s1">, </span><span class="s3">'news_url'</span><span class="s1">: </span><span class="s3">'https://n.news.naver.com/mnews/article/011/0004212752?sid=101'</span><span class="s1">}]</span>
+<a name="l53"><span class="ln">53   </span></a><span class="s0">######################################################################################################################</span>
+<a name="l54"><span class="ln">54   </span></a>
+<a name="l55"><span class="ln">55   </span></a><span class="s0">#(2)10 건의 뉴스 본문 내용 을 추출하 여 보고하시오</span>
+<a name="l56"><span class="ln">56   </span></a><span class="s2">def </span><span class="s1">get_news_contents(url):</span>
+<a name="l57"><span class="ln">57   </span></a>    <span class="s1">soup = get_soup_obj(url)</span>
+<a name="l58"><span class="ln">58   </span></a>    <span class="s1">body = soup.find(</span><span class="s3">'div'</span><span class="s1">, id=</span><span class="s3">&quot;dic_area&quot;</span><span class="s1">) </span><span class="s0">#div, id 가 dic_area 내용을 찾아 body에 저장</span>
+<a name="l59"><span class="ln">59   </span></a>    <span class="s1">news_contents = </span><span class="s3">''</span>
+<a name="l60"><span class="ln">60   </span></a>    <span class="s2">for </span><span class="s1">content </span><span class="s2">in </span><span class="s1">body:</span>
+<a name="l61"><span class="ln">61   </span></a>        <span class="s2">if </span><span class="s1">type(content) </span><span class="s2">is </span><span class="s1">bs4.element.NavigableString </span><span class="s2">and </span><span class="s1">len(content) &gt; </span><span class="s4">30</span><span class="s1">: </span><span class="s0"># 30 글자 이상 문장만 포함</span>
+<a name="l62"><span class="ln">62   </span></a>            <span class="s1">news_contents += content.strip() + </span><span class="s3">' ' </span><span class="s0"># 뉴스 요약 위해 마침표 뒤에 한 칸 띄기</span>
+<a name="l63"><span class="ln">63   </span></a>    <span class="s2">return </span><span class="s1">news_contents</span>
+<a name="l64"><span class="ln">64   </span></a>
+<a name="l65"><span class="ln">65   </span></a><span class="s0"># 10건의 url로부터 뉴스 본문 내용으로 연결 및 content 추출 함수</span>
+<a name="l66"><span class="ln">66   </span></a><span class="s2">def </span><span class="s1">get_news_contents_list(url):</span>
+<a name="l67"><span class="ln">67   </span></a>    <span class="s1">news_list10 = get_top_news_info(url)</span>
+<a name="l68"><span class="ln">68   </span></a>    <span class="s1">news_content_list = []</span>
+<a name="l69"><span class="ln">69   </span></a>
+<a name="l70"><span class="ln">70   </span></a>    <span class="s2">for </span><span class="s1">url_i </span><span class="s2">in </span><span class="s1">news_list10:</span>
+<a name="l71"><span class="ln">71   </span></a>        <span class="s1">urli = url_i[</span><span class="s3">'news_url'</span><span class="s1">]</span>
+<a name="l72"><span class="ln">72   </span></a>        <span class="s1">news_content = get_news_contents(urli)</span>
+<a name="l73"><span class="ln">73   </span></a>        <span class="s1">news_content_list.append(news_content)</span>
+<a name="l74"><span class="ln">74   </span></a>    <span class="s2">return </span><span class="s1">news_content_list</span>
+<a name="l75"><span class="ln">75   </span></a>
+<a name="l76"><span class="ln">76   </span></a><span class="s0"># 네이버 경제-부동산 뉴스 10건의 본문 내용 추출</span>
+<a name="l77"><span class="ln">77   </span></a><span class="s1">area_url = </span><span class="s3">&quot;https://news.naver.com/main/list.naver?mode=LS2D&amp;mid=shm&amp;sid1=101&amp;sid2=260&quot;</span>
+<a name="l78"><span class="ln">78   </span></a><span class="s1">get_news_contents_list(area_url)</span>
+<a name="l79"><span class="ln">79   </span></a><span class="s0">######################################################################################################################</span>
+<a name="l80"><span class="ln">80   </span></a><span class="s0">###################################################결과물 추가##########################################################</span>
+<a name="l81"><span class="ln">81   </span></a><span class="s0"># ['서울시가 압구정 3구역 재건축 설계공모와 관련해 희림종합건축사사무소(이하 희림)의 용적률 제시에 대해 고발하겠다는 입장을 11일 발표했다.</span>
+<a name="l82"><span class="ln">82   </span></a><span class="s0"># 이에 희림은 고발철회 조치를 강력 요청하고 나서며 재건축 추진이 난기류에 휩싸였다. 서울시는 이날 압구정3구역 재건축 정비사업 추진 과정에서</span>
+<a name="l83"><span class="ln">83   </span></a><span class="s0"># 서울시가 허용한 최대 용적률(300%)을 초과해 설계안을 제시한 희림에 대해 경찰에 고발조치 했다고 밝혔다. 서울시는 희림종합건축사사무소와</span>
+<a name="l84"><span class="ln">84   </span></a><span class="s0"># 나우동인건축사사무소를 사기미수, 업무방해 및 입찰방해 혐의로 관할 경찰서인 강동경찰서와 서초경찰서에 고발했다. 이에 360%의 용적률을 제시한</span>
+<a name="l85"><span class="ln">85   </span></a><span class="s0"># 희림은 &quot;공모지침 및 관련법령을 준수해 공정하게 경쟁하고 있다&quot;는 입장을 내놨다. \ufeff희림 측은 &quot;조합의 정비계획(안)을 참고해 \'수익성</span>
+<a name="l86"><span class="ln">86   </span></a><span class="s0"># 제고(상업시설 개발 등)를 위한 아이디어 제안할 수 있다\'는 공모지침을 따라 최선의 설계안을 제시한 것&quot;이라며 &quot;오히려 조합이 마련한 설계지침에</span>
+<a name="l87"><span class="ln">87   </span></a><span class="s0"># 가장 부합하는 상황&quot;이라고 밝혔다. 실제 이 공모지침에는 \'설계공모를 위해 제출한 공모작은 설계공모를 통해 조합원의 이해를 돕기 위한 건축계획으로서</span>
+<a name="l88"><span class="ln">88   </span></a><span class="s0"># 향후 \'압구정아파트지구 지구단위계획 구역결정 고시\', 세부개발계획(신속통합기획), 서울시 2040플랜, 사업시행계획인가에 따라 변경될 수 있다\'는</span>
+<a name="l89"><span class="ln">89   </span></a><span class="s0"># 내용이 포함돼 있다. 특히, 공모지침을 위반한 사실이 없을 뿐만 아니라 서울시가 조합과 희림 측의 확인 절차 없이 고발을 진행한 것 역시 공정하지 않다는</span>
+<a name="l90"><span class="ln">90   </span></a><span class="s0"># 점에도 강력 반발했다. 희림은 &quot;공정해야 하는 공공기관인 서울시가 일방의 주장만을 근거로 부당한 영향력을 행사하고 있다&quot;고 강조했다. 이어 &quot;\'사기미수\',</span>
+<a name="l91"><span class="ln">91   </span></a><span class="s0"># \'업무방해\' 등을 운운한 근거를 명확하게 밝혀야 할 것&quot;이라며 &quot;고발 건을 즉각 철회할 것을 강력 요청하며, 만일 그렇지 않을 경우 시에 대해 일체의 민·형사상</span>
+<a name="l92"><span class="ln">92   </span></a><span class="s0"># 법적 조치를 취할 것&quot;이라고 대응했다. ', '[헤럴드경제=박일한 기자] 이달 5일 서울 송파구 잠실동 ‘잠실엘스’ 84.8㎡(이하 전용면적) 전세가 10억8000만원에</span>
+<a name="l93"><span class="ln">93   </span></a><span class="s0"># 계약됐다. 집주인은 재계약(갱신 계약)을 하면서 기존 전세보증금(11억5000만원)에서 7000만원을 돌려줘야 했다. 그럼에도 연 초 우려에 비해 내준 돈이 많이 줄었다.</span>
+<a name="l94"><span class="ln">94   </span></a><span class="s0"># 이 아파트 같은 크기 전세는 연 초만 해도 모두 8억원대에 계약됐다. 최근 전셋값이 반등하지 않았다면 3억원 가까운 돈을 세입자에게 돌려줘야 할 상황이었던 셈이다.</span>
+<a name="l95"><span class="ln">95   </span></a><span class="s0"># 이 아파트 같은 크기 신규 전세 계약은 이달 1일 10억5000만원, 11억원에 잇따라 이뤄지는 등 빠르게 상승하고 있다. 하반기 주택시장을 흔들 변수로 여겨지던</span>
+<a name="l96"><span class="ln">96   </span></a><span class="s0"># ‘역전세난’ 우려가 조금씩 완화하고 있다. 전셋값이 본격적으로 오르고 있고, 정부가 이달 말부터 시행하는 역전세난 대책의 효과에 대한 기대감이 커지고 있어서다.</span>
+<a name="l97"><span class="ln">97   </span></a><span class="s0"># 역전세난 걱정이 줄어들면서 매매시장 반등에 대한 기대도 커지는 분위기다. ▶전셋값 하락 끝났다?= 다주택자인 A씨는 지난 4일 정부가 내놓은 대출규제 계획을</span>
+<a name="l98"><span class="ln">98   </span></a><span class="s0"># 확인한 후, 전세를 놓고 있는 마포구 아파트 전셋값을 무리하게 낮추지 않기로 했다. 정부가 이달 말부터 1년간 전세 보증금 반환 목적 대출에 대해 다주택자 여부</span>
+<a name="l99"><span class="ln">99   </span></a><span class="s0"># 상관없이 대출규제를 완화하기로 했기 때문이다. 정부 계획대로 DSR(총부채원리금상환비율) 40% 대신 DTI(총부채상환비율) 60%를 적용받으면, A씨가 받을 수 있</span>
+<a name="l100"><span class="ln">100  </span></a><span class="s0"># 는 대출은 2억~3억원 정도 늘어난다. 전셋값을 급히 내려 손해를 보느니 일단 대출을 신청해 기존 세입자를 내보낸 후, 천천히 새로운 임차인을 구할 생각이다.</span>
+<a name="l101"><span class="ln">101  </span></a><span class="s0"># 마포구는 최근 전셋값이 빠르게 반등하고 있어 새로운 세입자를 구할 10월쯤 되면 시장 상황이 많이 달라질 것으로 A씨는 기대하고 있다. 전문가들은 최근 전셋값이</span>
+<a name="l102"><span class="ln">102  </span></a><span class="s0"># 반등하고 있는 서울 강남권(강남, 서초, 송파구)이나 용산구, 마포구 등지에선 A씨 같은 사례가 많을 것으로 추정한다. 정부가 기존 세입자의 보증금상환기일이</span>
+<a name="l103"><span class="ln">103  </span></a><span class="s0"># 도래했는데, 역전세 상황에서 후속 세입자를 구하지 못하면 전세보증금을 먼저 대출해 주기로 했기 때문이다. 이는 역전세난을 겪고 있는 집주인에게 전셋값을 더</span>
+<a name="l104"><span class="ln">104  </span></a><span class="s0"># 내려 급하게 새 세입자를 구하느니, 시장 상황을 봐가며 여유있게 대응할 여력을 준다는 게 전문가들의 판단이다. 최근 서울과 경기 등 수도권 대부분 지역이</span>
+<a name="l105"><span class="ln">105  </span></a><span class="s0"># 전셋값 반등을 하는 것도 이들의 기대감을 높이고 있다. 한국부동산원에 따르면 이달 3일 기준 서울과 경기 아파트 전셋값은 각각 0.04%, 0.02% 올랐다.</span>
+<a name="l106"><span class="ln">106  </span></a><span class="s0"># 서울은 7주 연속, 경기는 3주 연속 전셋값이 뛰었다. 강남권 등 고가 아파트 단지엔 연초에 비해 수억원씩 전셋값이 뛴 곳도 많다. 전셋값은 반등하기 시작했는데,</span>
+<a name="l107"><span class="ln">107  </span></a><span class="s0"># 전세 물건은 급감하고 있다. 집값 추가 하락을 기대하면서 전세에 계속 머무는 사람들, 월세 부담을 견디지 못해 전세로 다시 돌아오는 사람들이 늘고 있어서다.</span>
+<a name="l108"><span class="ln">108  </span></a><span class="s0"># 부동산 정보업체 아실에 따르면 11일 기준 서울 아파트 전세는 3만3291채로 가장 많이 쌓였던 1월12일(5만5882채)과 비교하면 40%이상 감소했다. 경기도도</span>
+<a name="l109"><span class="ln">109  </span></a><span class="s0"># 현재 3만9145채로 1월12일(6만8673채)과 비교해 43%나 없어졌다. 시장에선 전세 물건수가 줄어드는 건 전셋값 반등의 신호로 여긴다. ▶매매시장에도 호재?=</span>
+<a name="l110"><span class="ln">110  </span></a><span class="s0"># 역전세난 완화는 매매시장 회복에도 도움이 될 것으로 전망된다. 집주인들이 전세보증금 반환금을 마련하지 못해 억지로 급매물로 팔아야 하는 경우가 줄어들기</span>
+<a name="l111"><span class="ln">111  </span></a><span class="s0"># 때문이다. 일부 전문가들은 오히려 투자 수요가 늘어날 여지도 있다고 판단한다. 한 부동산컨설팅업체 대표는 “다주택자 상당수가 역전세에 대비해 올 하반기</span>
+<a name="l112"><span class="ln">112  </span></a><span class="s0"># 재계약을 할 때 세입자에게 돌려줄 목적으로 은행에 수억원씩 모아놓았다”며 “전세보증금 반환 목적 전세 대출을 받을 수 있게 된다면, 모아놓은 현금을 다른</span>
+<a name="l113"><span class="ln">113  </span></a><span class="s0"># 데 활용할 여력이 생기는 것”이라고 말했다. 집값이 반등하는 시점이라고 판단한 다주택자들이 전세보증금 반환 목적으로 모아놓은 현금을 투자목적으로 돌릴</span>
+<a name="l114"><span class="ln">114  </span></a><span class="s0"># 수 있다는 이야기다. 공시가격 현실화율 인하, 종합부동산세 및 양도소득세 완화 등 정부가 각종 세금 부담을 줄여주는 정책을 추진하고 있는 것도 집값</span>
+<a name="l115"><span class="ln">115  </span></a><span class="s0"># 회복엔 도움이 될 것으로 보인다. 전문가들은 올 하반기 정부는 재건축, 재개발 규제완화를 추진할 수밖에 없을 것으로 보고 있다. 수요가 많은 서울 도심,</span>
+<a name="l116"><span class="ln">116  </span></a><span class="s0"># 1기신도시 등 구도심에 아파트를 원활하게 공급하기 위한 규제를 풀어줘야 중장기적으로 집값이 안정된다고 보기 때문이다. 당장 3~4년 내년 이후 집값이</span>
+<a name="l117"><span class="ln">117  </span></a><span class="s0"># 불안할 수 있다고 보는 전문가도 있다. 부동산R114에 따르면 서울 아파트 입주 물량은 올해 2만6500가구, 내년 1만4100가구 수준에 머문다. 최근 10년간</span>
+<a name="l118"><span class="ln">118  </span></a><span class="s0"># 서울 아파트 연평균 입주 물량(3만3600가구)의 절반 수준도 안된다. 최근 새 아파트 인허가는 줄고 있어 2~3년 후 입주량은 더 줄어들 수 있다. 이재국 금융연수원</span>
+<a name="l119"><span class="ln">119  </span></a><span class="s0"># 겸임교수는 “최근 서울 동작구 ‘흑석자이’ 무순위청약 결과 2가구 모집에 93만명이나 몰린 건, 시장을 예의주시하는 잠재 주택 수요자가 그만큼 많다는 의미</span>
+<a name="l120"><span class="ln">120  </span></a><span class="s0"># 아니겠냐”며 “하반기 경기 전망이 좋지 않기 때문에 본격적인 반등은 어렵겠지만, 시장 침체가 우려만큼 심각하지 않다면 지역에 따라 집값도 반등하는 곳이</span>
+<a name="l121"><span class="ln">121  </span></a><span class="s0"># 많아질 수 있다”고 말했다. ', '(서울=뉴스1) 박기현 기자 = 김건희 여사 일가의 서울-양평 고속도로 종점 변경 특혜 의혹으로 여야간 공방이 이어지는 가운데</span>
+<a name="l122"><span class="ln">122  </span></a><span class="s0"># 원희룡 국토교통부 장관이 이재명 더불어민주당 대표를 향해 &quot;이제 국정농단 운운한다. 참 안타깝다&quot;며 &quot;더 이상 망상의 바다를 헤매지 말고 공개토론의 장으로</span>
+<a name="l123"><span class="ln">123  </span></a><span class="s0"># 나오기 바란다&quot;고 직격했다. 원 장관은 11일 자신의 사회관계망서비스(SNS)를 통해 &quot;도대체 무엇을 위해 상상과 공상에 더해 망상까지 붙들고 꿈속을 헤매는</span>
+<a name="l124"><span class="ln">124  </span></a><span class="s0"># 것이냐&quot;며 이같이 밝혔다. 그는 &quot;서울-양평 고속도로 대안 노선은 문재인 정부에서 발주한 고속도로 타당성 조사 용역의 결과물&quot;이라며 &quot;제가 장관 취임하기</span>
+<a name="l125"><span class="ln">125  </span></a><span class="s0"># 전부터 준비돼 있던 전문가 용역진의 안으로, 열흘도 안 돼 국토부에 보고된 것&quot;이라고 설명했다. 그러면서 &quot;이런 사실이 밝혀지자 이제는 (윤석열 정부)</span>
+<a name="l126"><span class="ln">126  </span></a><span class="s0"># 인수위에서부터 특혜를 주기 위해 계획을 세웠다는 망상까지 동원하고 있다&quot;며 &quot;오늘도 민주당은 자신들의 거짓을 완성하기 위해 온갖 안간힘을 쓰고 있다&quot;고</span>
+<a name="l127"><span class="ln">127  </span></a><span class="s0"># 거세게 비판했다. 앞서 이 대표는 전날 최고위원회의에서 &quot;지금까지 많은 국정농단 사례들을 봐왔지만 수조원대 국책사업을 아무런 설명도 없이 갑자기</span>
+<a name="l128"><span class="ln">128  </span></a><span class="s0"># 옮기는 건 처음 봤다. 이런 게 국정농단 아닌가&quot;라고 말한 바 있다. 또 이 대표는 지난 7일 사업 전면 백지화 선언 당시 원 장관의 토론 제안에 &quot;왜</span>
+<a name="l129"><span class="ln">129  </span></a><span class="s0"># 나하고 하나. 토론은 양평 주민들하고 해야 한다&quot;고 선을 그었다. ', 'GS건설이 시공해 지난 3월 입주를 시작한 서울 강남구 신축 대단지가 11일 내린</span>
+<a name="l130"><span class="ln">130  </span></a><span class="s0"># 폭우로 침수 피해가 발생했다. 앞서 지난달 지하주차장과 티하우스 누수 문제로 침수 이슈가 있었는데, 이날 폭우로는 단지 내 보행로·커뮤니티시설이 물에</span>
+<a name="l131"><span class="ln">131  </span></a><span class="s0"># 잠기면서 또다시 부실시공 논란이 커지고 있다. 서울 강남구 \'개포자이프레지던스\' 입주민에 따르면, 이날 오후부터 폭우가 쏟아지면서 아파트 동 건물</span>
+<a name="l132"><span class="ln">132  </span></a><span class="s0"># 출입구와 커뮤니티 시설인 \'자이안\' 등이 빗물에 잠겼다. 침수 피해로 입주민 통행도 불가능해지고 화단 일부도 물에 잠긴 것으로 알려졌다. 이 단지는</span>
+<a name="l133"><span class="ln">133  </span></a><span class="s0"># 인천 검단신도시 주차장 붕괴 사고가 발생한 GS건설이 시공했다. 지난달 21일 지하주자창 침수에 이어 재차 침수 피해가 발생하자 입주민들은 단지 배수시설</span>
+<a name="l134"><span class="ln">134  </span></a><span class="s0"># 설계 전반에 대해 하자가 있는 것이 아닌지 우려하고 있다. GS건설 관계자는 &quot;강남 일대 집중 호우로 인해 일부 침수가 발생했고, 정확한 원인을 파악하고</span>
+<a name="l135"><span class="ln">135  </span></a><span class="s0"># 있다&quot;며 &quot;갑작스런 폭우로 빗물이 차올랐고 그 중 일부가 내부로 흘러들어온 것으로 하자까지는 아닌 것으로 보고 있다&quot;고 설명했다. 개포주공4단지를 재건축한</span>
+<a name="l136"><span class="ln">136  </span></a><span class="s0"># 개포자이 프레지던스는 지하 4층~지상 35층, 35개동, 전용면적 39~185㎡, 총 3375가구 규모의 신축 단지다. 이 단지의 전용면적 84㎡는 지난 2월 25억원에</span>
+<a name="l137"><span class="ln">137  </span></a><span class="s0"># 거래된 바 있다. 장마 영향으로 당분간 신축 단지들에는 침수 및 누수 문제가 이어질 것으로 예상된다. 이날 온라인 커뮤니티에는 인천에서 입주를 시작한 한</span>
+<a name="l138"><span class="ln">138  </span></a><span class="s0"># 대형 단지의 엘레베이터와 계단에서 빗물이 쏟아지는 영상이 공유되기도 했다. ', '서울시가 압구정3구역 재건축 정비사업 추진 과정에서 건축설계 공모 지침을</span>
+<a name="l139"><span class="ln">139  </span></a><span class="s0"># 위반했다는 논란이 불거진 건축사사무소 2곳을 경찰에 고발했다. 서울시가 재건축 사업에서 설계 공모와 관련한 규정 위반 등을 이유로 직접 형사 고발한 것은</span>
+<a name="l140"><span class="ln">140  </span></a><span class="s0"># 이례적이다. 서울시는 희림종합건축사사무소와 나우동인건축사사무소를 사기미수, 업무방해 및 입찰방해 혐의로 관할 경찰서인 강동경찰서와 서초경찰서에 각각</span>
+<a name="l141"><span class="ln">141  </span></a><span class="s0"># 고발했다고 11일 밝혔다. 또 이번 설계 공모 과정에 감독 책임이 있는 강남구청에 해당 설계안 설계자를 행정조치하도록 요구했다. 시는 컨소시엄을 구성한 두</span>
+<a name="l142"><span class="ln">142  </span></a><span class="s0"># 건축사무소가 압구정3구역(강남구 압구정동 396-1 일대) 정비계획안 수립을 위한 설계사 선정을 앞두고 시가 정한 용적률 등에 부합하지 않는 설계안을 제시해</span>
+<a name="l143"><span class="ln">143  </span></a><span class="s0"># 조합원, 주민 등을 속이려 했다고 지적했다. 시 관계자는 “지침에 따라 조합에서 해당 설계안에 대해 실격 처리하는 등 합당한 조처를 하게 할 것”이라면서</span>
+<a name="l144"><span class="ln">144  </span></a><span class="s0"># “압구정3구역의 신속통합기획안이 그대로 유지될 수 있도록 철저히 관리할 계획”이라고 말했다. 그러면서 “앞으로 올바른 설계문화 정착을 위해 관련 규정에</span>
+<a name="l145"><span class="ln">145  </span></a><span class="s0"># 부합하지 않는 왜곡된 설계로 주민을 현혹하고 시장을 교란하는 설계자에 대해서는 엄정히 대응해 나갈 방침”이라고 강조했다. 희림건축은 압구정3구역 재건축</span>
+<a name="l146"><span class="ln">146  </span></a><span class="s0"># 설계 공모 수주전에 참여했다. 이 건축사사무소는 전 가구 한강 조망과 함께 한강변 인근 최고 70층 높이의 건물로 서울의 랜드마크로 자리매김한다는 설계안을</span>
+<a name="l147"><span class="ln">147  </span></a><span class="s0"># 내세웠다. 문제는 희림건축의 설계안이 용적률 360%를 기반으로 하면서 불거졌다. 용적률이 높아지면 집을 더 크게 짓거나 높게 지을 수 있는데, 희림건축이</span>
+<a name="l148"><span class="ln">148  </span></a><span class="s0"># 이를 부각하자 경쟁업체는 이 설계안이 제3종 일반주거지역의 용적률 최대한도(300% 이하)를 초과했다면서 공모 지침 위반이라고 문제를 제기했다. 이에 희림건축은</span>
+<a name="l149"><span class="ln">149  </span></a><span class="s0"># 제로에너지 주택, 지능형 건축물 등 건축법과 주택법 등에 근거한 용적률 인센티브를 적용해 계획안을 제시했다며 맞섰으나 시는 ‘불가능한 설계안’이라고 결론</span>
+<a name="l150"><span class="ln">150  </span></a><span class="s0"># 내렸다. 설계업체 선정을 위한 압구정3구역 조합 총회는 15일로 예정돼있다. ', '지난 4월 초 발생한 경기 성남시 정자교 붕괴 사고는 다리 윗부분에 발생한</span>
+<a name="l151"><span class="ln">151  </span></a><span class="s0"># 균열로 철근이 빗물 등에 노출돼 부식된 데다 콘크리트 손상으로 지지력이 약화됐기 때문인 것으로 드러났다. 이 과정에서 교량 관리 책임이 있는 성남시가</span>
+<a name="l152"><span class="ln">152  </span></a><span class="s0"># 유지관리에 소홀해 붕괴로 이어진 것으로 나타났다. 국토교통부는 11일 정부세종청사에서 정자교 보도부 붕괴사고에 대해 국토안전관리원 사고조사위원회의 조사</span>
+<a name="l153"><span class="ln">153  </span></a><span class="s0"># 결과를 발표했다. 이용강 위원장은 “다리 도로 부분 아래쪽에 연결된 콘크리트와 보도부를 연결하는 인장 철근의 부착력이 약화하면서 붕괴로 이어졌다”고 밝혔다.</span>
+<a name="l154"><span class="ln">154  </span></a><span class="s0"># 정자교는 차량이 지나가는 도로부와 사람이 이용하는 보도부로 구분된다. 보도부는 밑에 지지대 없이 한쪽이 도로부에 철근과 콘크리트로 연결된 캔틸레버 구조로</span>
+<a name="l155"><span class="ln">155  </span></a><span class="s0"># 돼 있다. 지난 4월 5일 보도부 40m가 무너지며 1명이 사망하고 1명이 다쳤다. ', '[이데일리 박경훈 기자] 원희룡 국토교통부 장관이 청사 앞 응원 화환·</span>
+<a name="l156"><span class="ln">156  </span></a><span class="s0"># 꽃다발 행렬에 대해 “응원 감사합니다”라고 답했다. 해당 화환은 원 장관이 양평 고속도로 백지화를 두고 정치권 공방을 벌이고 있는 것과 관련 보수 지지자들이</span>
+<a name="l157"><span class="ln">157  </span></a><span class="s0"># 보낸 것으로 추정된다. 11일 세종 국토부 청사 앞에는 원 장관을 응원하는 보수 지지층의 화환행렬이 이어졌다. 해당 화환은 “원희룡 장관님 힘내세요”,</span>
+<a name="l158"><span class="ln">158  </span></a><span class="s0"># “굳세어라 원희룡”, ”원희룡 장관님 우리가 함께합니다”, “보수의 보배 원희룡” 등의 글귀가 적혀 있었다. 해당 화환은 전날 오전 한두 개씩 도착하기 시작했는데,</span>
+<a name="l159"><span class="ln">159  </span></a><span class="s0"># 이날 오후 60개까지 늘어났고, 국토부 청사 입구 양옆으로 50m가량 도열한 상태로 알려졌다. 그 밑으로는 꽃바구니 40여개도 놓였다. 다만 원 장관은 윤 대통령의</span>
+<a name="l160"><span class="ln">160  </span></a><span class="s0"># 리투아니아·폴란드 순방 수행을 위해 이날 오전 출국해 직접 이 모습을 보지 못했다. 대신 SNS를 통해 “감사하다”는 답을 남긴 것. 이같은 화환은 최근 불고</span>
+<a name="l161"><span class="ln">161  </span></a><span class="s0"># 있는 서울-양평 고속도로를 둔 정치권 공방 때문으로 해석된다. 앞서 원 장관은 서울-양평 고속도로의 대안 노선 도출 과정에서 윤석열 대통령 부인 김건희 여사</span>
+<a name="l162"><span class="ln">162  </span></a><span class="s0"># 일가에게 특혜가 주어졌다는 논란이 정치 공방으로 확산하자, 지난 6일 이 사업의 전면 백지화를 선언했다. 이후 원 장관은 야권의 정치 공세가 지속되면 사업</span>
+<a name="l163"><span class="ln">163  </span></a><span class="s0"># 재추진을 할 수 없다는 입장을 거듭 강조하고 있다. 실제 원 장관은 “(저희가) 아무리 팩트를 얘기하고, 아무리 노선을 설명해도 이 정부 내내 김건희 여사를</span>
+<a name="l164"><span class="ln">164  </span></a><span class="s0"># 악마로 만들기 위한 민주당의 가짜뉴스 프레임(틀)을 우리가 말릴 방법이 없다”고 답답함을 토로하기도 했다. 앞서 지난 5월에는 한동훈 법무부 장관 취임 1주년을</span>
+<a name="l165"><span class="ln">165  </span></a><span class="s0"># 맞아 과천 법무부 청사 앞에 지지자들이 보낸 꽃다발과 화환이 수십개 놓이기도 했다. 이에 대해 국토부 관계자는 “장관님 응원 메시지로 알고 있다”면서도</span>
+<a name="l166"><span class="ln">166  </span></a><span class="s0"># “어느 단체인지 까지는 확인을 못 했다”고 답했다. ', '코로나19 팬데믹을 거치는 동안 항바이러스 기술을 적용하는 신축 아파트가 부쩍 늘었다. 살균 조명이나</span>
+<a name="l167"><span class="ln">167  </span></a><span class="s0"># 살균 청정기를 설치해 각종 질병을 유발하는 세균이 집 안으로 침투하거나 단지 내에서 번식하는 것을 막기 위해서다. 현대건설은 실내 공기중에 떠다니는 바이러스와</span>
+<a name="l168"><span class="ln">168  </span></a><span class="s0"># 유해물질을 제거할 수 있는 광플라즈마 살균·청정 환기 시스템을 최근 분양한 경북 포항 ‘힐스테이트 환호공원’에 유상옵션(선택형 상품)으로 적용했다고 11일</span>
+<a name="l169"><span class="ln">169  </span></a><span class="s0"># 밝혔다. 광플라즈마는 우주선 내 공기 정화와 우주인용 식품 살균을 위해 미국 항공우주국(NASA)이 개발한 특수물질이다. 현대건설이 2020년 6월 특허 등록을</span>
+<a name="l170"><span class="ln">170  </span></a><span class="s0"># 한 광플라즈마 환기 시스템은 초미세먼지는 물론 헤파필터로도 제거할 수 없는 바이러스, 박테리아, 곰팡이, 휘발성 유기화합물, 폼알데하이드를 제거할 수 있다고</span>
+<a name="l171"><span class="ln">171  </span></a><span class="s0"># 한다. 공기 살균 시스템을 탑재한 ‘클린 엘리베이터’, 신발·소지품 살균이 가능한 ‘H클린현관’도 힐스테이트 아파트에 적용되는 안티바이러스 기술이다. 대우건설은</span>
+<a name="l172"><span class="ln">172  </span></a><span class="s0"># 살균 기능이 포함된 ‘푸르지오 시스템 청정환기’ 기술을 삼성전자와 함께 개발해 2021년 12월부터 신규 분양 단지에 적용 중이다. 충북 ‘음성 푸르지오 더 퍼스트’에</span>
+<a name="l173"><span class="ln">173  </span></a><span class="s0"># 유상옵션으로 처음 도입한 이 상품은 미세먼지를 99.9%의 제거하는 공기 청정 기능에 UV-LED 살균 기능을 더한 제품이다. UV-LED는 자외선(UV)을 내뿜는 LED로</span>
+<a name="l174"><span class="ln">174  </span></a><span class="s0"># 유해 세균을 거의 박멸한다. 육아 필수템인 유아용 젖병 소독기도 UV-LED 방식이다. GS건설이 자회사 자이S&amp;D와 공동으로 개발한 공기 청정 시스템 ‘시스클라인’은</span>
+<a name="l175"><span class="ln">175  </span></a><span class="s0"># 창문을 열지 않고도 외부 공기를 활용한 환기가 가능한 방식이다. 큰 먼지 제거가 가능한 프리 필터부터 항균·항바이러스 기능을 갖춘 기능성 필터, 탈취 필터,</span>
+<a name="l176"><span class="ln">176  </span></a><span class="s0"># 초미세먼지를 차단하는 헤파급 필터까지 다단계 필터를 통해 실내 공기를 정화한다. 삼성물산은 감염성 바이러스 차단을 위한 음압 환기 시스템을 개발했다. 아파트</span>
+<a name="l177"><span class="ln">177  </span></a><span class="s0"># 공동 현관과 세대 현관에는 얼굴인식 기술을 적용해 비접촉 출입이 가능하도록 했다. 세대 입구에 건식 세면대를 설치해 귀가 시 바로 손을 씻을 수 있는 ‘클린 현관’,</span>
+<a name="l178"><span class="ln">178  </span></a><span class="s0"># 살균수와 일반수를 동시에 사용할 수 있는 일체형 살균 수전 등도 선보였다. 포스코이앤씨는 엘리베이터 안에 UV-C LED 살균 조명을 설치해 바이러스와 세균에 대응하고</span>
+<a name="l179"><span class="ln">179  </span></a><span class="s0"># 있다. 조만간 분양하는 경남 김해 ‘더샵 신문그리니티’와 제주 ‘더샵 연동애비뉴’에 적용된다. ', '한국토지신탁이 서울 강서구 마곡 신안빌라 추진위원회와 업무협약(MOU)를</span>
+<a name="l180"><span class="ln">180  </span></a><span class="s0"># 체결한 뒤 불과 2주 만에 사업시행자 지정 동의 요건을 받아냈다. 통상 재건축 사업에서 동의서 징구 기간이 7개월 이상 걸리는 것을 감안하면 이 기간을 매우 크게 단축시킨</span>
+<a name="l181"><span class="ln">181  </span></a><span class="s0"># 것이다. 특히 한국토지신탁은 동의서 징구 과정에서 SNS 라이브 방송을 통해 1:1 끝장 토론을 생중계하는 방식을 도입해 재건축 반대·상가 소유주 여론을 설득한 것으로</span>
+<a name="l182"><span class="ln">182  </span></a><span class="s0"># 알려졌다. 재건축 현장에서 신탁사와 주민 간 1:1 생중계 토론이 등장한 사례는 이번이 처음이다. 11일 정비업계에 따르면 마곡동 신안빌라 재건축 사업이 최근 급속도로</span>
+<a name="l183"><span class="ln">183  </span></a><span class="s0"># 진행되고 있다. 신안빌라 재건축 추진위원회는 지난 5월 한국토지신탁과 MOU를 맺고 신탁방식으로 재건축 사업을 진행 중이다. 마곡 신안빌라 재건축은 서울시 강서구 마곡동</span>
+<a name="l184"><span class="ln">184  </span></a><span class="s0"># 일대 1만7451㎡ 부지에 현 234가구를 재건축해 400가구 규모 아파트를 짓는 사업이다. 9호선과 공항철도 마곡나루역에 인접해 있고, 마곡 산업단지와 서울식물원을 끼고</span>
+<a name="l185"><span class="ln">185  </span></a><span class="s0"># 있어 직주근접 및 생활 인프라가 뛰어나다고 평가받는다. 마곡 신안빌라 재건축정비사업은 지난 2012년 정비구역으로 지정된 이후 2019년 시공사 선정과 함께 조합원 분양신청까지</span>
+<a name="l186"><span class="ln">186  </span></a><span class="s0"># 마친 상태였지만 이후 사업 진행은 지지부진 했다. 신안빌라 재건축 추진위가 조합설립 과정에서 상가 소유자를 누락해 2020년 대법원으로부터 조합설립 무효 판결을 받았기</span>
+<a name="l187"><span class="ln">187  </span></a><span class="s0"># 때문이다. 당시 전국 재건축 시장은 초저금리로 인한 부동산 경기 훈풍 분위기 였지만 신안빌라 재건축 추진위는 이 같은 이유로 사업을 진척시키지 못했다. 이에 신안빌라</span>
+<a name="l188"><span class="ln">188  </span></a><span class="s0"># 재건축 추진위는 소유주들간 이견을 효율적으로 조율해 나갈 수 있는 중재자가 필요하다고 판단해 한국토지신탁을 지난 5월 시행자로 지정해 신탁방식 재건축으로 사업 방식을</span>
+<a name="l189"><span class="ln">189  </span></a><span class="s0"># 전환했다. 이후 이 사업은 급속도로 진행되기 시작했다. 한국토지신탁은 통상 7개월 이상 걸리는 것으로 알려져 있는 사업시행자 지정 동의서 징구 기간을 2주로 단축시켰다.</span>
+<a name="l190"><span class="ln">190  </span></a><span class="s0"># 특히 한국토지신탁은 신안빌라 재건축 현장에서 SNS 라이브 방송을 통해 1:1 끝장토론을 생중계하는 방식으로 신탁 재건축 반대 여론을 설득한 것으로 알려졌다. 또</span>
+<a name="l191"><span class="ln">191  </span></a><span class="s0"># 신안빌라가 재건축을 추진하기 위해서는 상가 소유자의 사업참여가 필수적이었기 때문에 한국토지신탁은 상가 소유자들을 설득하는 데 우선적으로 집중했다. 재건축 현장에서</span>
+<a name="l192"><span class="ln">192  </span></a><span class="s0"># 신탁사와 주민 간 1:1 생중계 토론이 등장한 사례는 이번이 처음이다. 이 결과 한국토지신탁은 신안빌라 사업시행자 지정 동의요건을 2주 만에 달성해 이달 5일 강서구청으로부터</span>
+<a name="l193"><span class="ln">193  </span></a><span class="s0"># 신안빌라 사업시행자 지정고시를 따냈다. 상가 소유자 과반을 포함해 약 80% 이상의 동의율을 확보한 것이다. 한국토지신탁 관계자는 &quot;신탁방식 정비사업은 여전히 생소한</span>
+<a name="l194"><span class="ln">194  </span></a><span class="s0"># 것이 사실이고 이를 경계하는 소유자들이 적지 않은데, 이들을 설득하기 위해 밤낮과 주말을 가리지 않고 노력했다&quot;며 &quot;특히 1:1 라이브 토론 등은 당사에게도 생소한 경험</span>
+<a name="l195"><span class="ln">195  </span></a><span class="s0"># 이었는데, 신속하게 동의율 확보를 마칠 수 있었던 주요 원인이 된 것 같다&quot;고 전했다. ', '서울 아파트 가격 반등을 견인하고 있는 강남 3구(서초·강남·송파구)에서 전</span>
+<a name="l196"><span class="ln">196  </span></a><span class="s0"># 고점을 뛰어넘는 신고가 거래가 속출하고 있다. 강남권 중대형 아파트를 중심으로 거래량과 거래가가 동반 상승하며 매매 시장에 온기가 퍼지자 서울 전체 아파트 매매 거래량은</span>
+<a name="l197"><span class="ln">197  </span></a><span class="s0"># 세 달 연속 3000건을 돌파했다. 11일 국토교통부 실거래가 공개시스템에 따르면 지난달 강남권 중대형 아파트를 중심으로 전 고점인 2021년 가격을 뛰어넘는 금액에 거래가</span>
+<a name="l198"><span class="ln">198  </span></a><span class="s0"># 속속 체결됐다. 서울시 신속통합기획으로 재건축이 한창인 강남구 압구정동 한양 4차 전용면적 208㎡은 지난달 27일 64억 원에 거래됐는데 이는 직전 최고 가격인 2021년</span>
+<a name="l199"><span class="ln">199  </span></a><span class="s0"># 1월 52억 9000만 원보다 21%(약 11억 원) 높은 가격이다. 인근 현대 8차 전용면적 163㎡도 지난달 49억 5000만 원에 거래된 것으로 2021년 8월 거래가인 48억 7000만</span>
+<a name="l200"><span class="ln">200  </span></a><span class="s0"># 원보다 8000만 원 높다. 서초구 반포동 래미안 퍼스티지 117㎡도 전 고점을 돌파했다. 지난달 13일 50억 5000만 원에 거래됐는데 이는 전 고점 가격인 43억 5000만</span>
+<a name="l201"><span class="ln">201  </span></a><span class="s0"># 원(2021년 11월)보다 16%가량 높은 가격이다. 송파구 잠실동 엘스 119㎡도 지난달 24일 34억 5000만 원에 거래됐는데 2021년 11월 거래 가격인 34억 원보다 소폭 높았다.</span>
+<a name="l202"><span class="ln">202  </span></a><span class="s0"># 강남구 대치동 은마 84㎡도 지난달 17일 25억 6000만 원에 거래가 체결됐는데 전 고점인 2021년 11월(28억 2000만 원) 가격의 91% 수준으로 회복했다. 은마 인근의 한</span>
+<a name="l203"><span class="ln">203  </span></a><span class="s0"># 공인 중개 업소 관계자는 “은마가 위치한 강남구 대치동은 토지거래허가구역이고 실거주 목적으로만 매매할 수 있음에도 조합 설립이 임박했다는 소식에 매수 문의가 늘었다”고</span>
+<a name="l204"><span class="ln">204  </span></a><span class="s0"># 말했다. 재건축 단지는 조합 설립 인가 이후 주택을 매입하면 조합원 지위를 승계받을 수 없기 때문이다. 강남 3구의 거래량은 올해 1월부터 빠른 회복세를 보였다. 12월</span>
+<a name="l205"><span class="ln">205  </span></a><span class="s0"># 거래량은 서초구 29건, 강남구 39건, 송파구 86건으로 100건을 밑돌았지만 이날까지 신고된 건 기준 지난달 거래량은 각각 119건, 161건, 234건으로 4배 가까이 늘었다.</span>
+<a name="l206"><span class="ln">206  </span></a><span class="s0"># 강남권 아파트에서 거래량과 호가가 오르면서 서울 전역에도 매매 온기가 퍼지고 있다. 이날 신고된 건을 기준으로 했을 때 지난달 서울 아파트 매매 거래량은 3058건으로</span>
+<a name="l207"><span class="ln">207  </span></a><span class="s0"># 4월 3189건, 5월 3419건에 이어 세 달 연속 3000건을 돌파했다. 이달 말일까지 신고 기한이 남아 있는 점을 고려하면 직전 최대 거래량이었던 2021년 8월(4065건)</span>
+<a name="l208"><span class="ln">208  </span></a><span class="s0"># 수준을 회복할 가능성이 높아졌다. 전문가들은 거래 정상화의 기준을 월별 거래량 5000건 전후로 보고 있다. 거래절벽을 겪은 지난해 월별 평균 거래량은 997건에 그쳤다.</span>
+<a name="l209"><span class="ln">209  </span></a><span class="s0"># 올해 정부가 부동산 규제를 대폭 완화하는 ‘1·3 부동산 대책’을 발표한 후 월별 거래량은 올 1월 1417건, 2월 2458건, 3월 2984건으로 상승세가 지속됐다. 서울 아파트</span>
+<a name="l210"><span class="ln">210  </span></a><span class="s0"># 매매 거래량이 세 달 연속 3000건을 돌파하면서 전문가들은 주택 시장 연착륙에 무게를 싣고 있다. 송승현 도시와경제 대표는 “강남 중대형 평형의 가격이 상승하게 되면</span>
+<a name="l211"><span class="ln">211  </span></a><span class="s0"># 서울 외곽 소형 평수들도 시차를 두고 오르게 된다”며 “서울 아파트 가격이 완만하게 상승을 이어가게 되면서 올 하반기와 내년 상반기에 심화할 것으로 전망됐던 역전세난</span>
+<a name="l212"><span class="ln">212  </span></a><span class="s0"># 우려도 예상보다는 작을 수 있다”고 예상했다. ']</span>
+<a name="l213"><span class="ln">213  </span></a><span class="s0">######################################################################################################################</span>
+<a name="l214"><span class="ln">214  </span></a>
+<a name="l215"><span class="ln">215  </span></a><span class="s0">#(3)genism 라이브러리 를 이용하여 뉴스 본문 내용 을 요약 하여 보고 하시오 본문의 문장이 30 글자를 초과하는 경우만 요약하고 가능하면</span>
+<a name="l216"><span class="ln">216  </span></a><span class="s0"># 20 단어 이하로 요약하시오</span>
+<a name="l217"><span class="ln">217  </span></a><span class="s0">#크롤링한 네이버 뉴스 요약</span>
+<a name="l218"><span class="ln">218  </span></a><span class="s2">import </span><span class="s1">gensim</span>
+<a name="l219"><span class="ln">219  </span></a><span class="s2">from </span><span class="s1">gensim.summarization.summarizer </span><span class="s2">import </span><span class="s1">summarize</span>
+<a name="l220"><span class="ln">220  </span></a><span class="s1">news_cont10 = get_news_contents_list(area_url)</span>
+<a name="l221"><span class="ln">221  </span></a>
+<a name="l222"><span class="ln">222  </span></a><span class="s0">#뉴스 10건의 본문 길이 확인</span>
+<a name="l223"><span class="ln">223  </span></a><span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(</span><span class="s4">10</span><span class="s1">):</span>
+<a name="l224"><span class="ln">224  </span></a>    <span class="s1">print(len(news_cont10[i]))</span>
+<a name="l225"><span class="ln">225  </span></a><span class="s0"># 922 # 2567 # 705 # 777 # 1034 # 432 # 952 # 1202 # 1507 # 1648</span>
+<a name="l226"><span class="ln">226  </span></a>
+<a name="l227"><span class="ln">227  </span></a><span class="s0"># 뉴스 요약하기</span>
+<a name="l228"><span class="ln">228  </span></a><span class="s1">snews_cont10 = []</span>
+<a name="l229"><span class="ln">229  </span></a><span class="s2">for </span><span class="s1">news_info </span><span class="s2">in </span><span class="s1">news_cont10:</span>
+<a name="l230"><span class="ln">230  </span></a>    <span class="s0">#print(len(news_info))</span>
+<a name="l231"><span class="ln">231  </span></a>
+<a name="l232"><span class="ln">232  </span></a>    <span class="s2">if </span><span class="s1">len(news_info) &gt; </span><span class="s4">30</span><span class="s1">:</span>
+<a name="l233"><span class="ln">233  </span></a>        <span class="s2">try</span><span class="s1">:</span>
+<a name="l234"><span class="ln">234  </span></a>            <span class="s0">#print(&quot;debug 1&quot;)</span>
+<a name="l235"><span class="ln">235  </span></a>            <span class="s1">snews_contents = summarize(news_info, word_count=</span><span class="s4">20</span><span class="s1">)</span>
+<a name="l236"><span class="ln">236  </span></a>            <span class="s2">if </span><span class="s1">len(snews_contents) == </span><span class="s4">0</span><span class="s1">: </span><span class="s0">#20단어로 요약이 안되는 경우 30단어로 요약 실행</span>
+<a name="l237"><span class="ln">237  </span></a>                <span class="s1">snews_contents = summarize(news_info, word_count=</span><span class="s4">30</span><span class="s1">)</span>
+<a name="l238"><span class="ln">238  </span></a>        <span class="s2">except</span><span class="s1">:</span>
+<a name="l239"><span class="ln">239  </span></a>            <span class="s0">#print(&quot;debug 2&quot;)</span>
+<a name="l240"><span class="ln">240  </span></a>            <span class="s1">snews_contents = news_info</span>
+<a name="l241"><span class="ln">241  </span></a>    <span class="s2">else</span><span class="s1">:</span>
+<a name="l242"><span class="ln">242  </span></a>        <span class="s0">#print(&quot;debug 3&quot;)</span>
+<a name="l243"><span class="ln">243  </span></a>        <span class="s1">print(news_info)</span>
+<a name="l244"><span class="ln">244  </span></a>        <span class="s1">snews_contents = news_info</span>
+<a name="l245"><span class="ln">245  </span></a>    <span class="s1">snews_cont10.append(snews_contents)</span>
+<a name="l246"><span class="ln">246  </span></a>
+<a name="l247"><span class="ln">247  </span></a><span class="s0"># 요약 결과:</span>
+<a name="l248"><span class="ln">248  </span></a><span class="s0"># 요약이 안될 경우 예외처리의 word_count 수를 조금씩 증가하며 출력 여부 확인</span>
+<a name="l249"><span class="ln">249  </span></a><span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(</span><span class="s4">10</span><span class="s1">):</span>
+<a name="l250"><span class="ln">250  </span></a>    <span class="s1">print(</span><span class="s3">&quot;{0}번째 뉴스 원문&quot;</span><span class="s1">.format(i))</span>
+<a name="l251"><span class="ln">251  </span></a>    <span class="s1">print(news_cont10[i])</span>
+<a name="l252"><span class="ln">252  </span></a>    <span class="s1">print(</span><span class="s3">&quot;{0}번째 뉴스 요약&quot;</span><span class="s1">.format(i))</span>
+<a name="l253"><span class="ln">253  </span></a>    <span class="s1">print(snews_cont10[i])</span>
+<a name="l254"><span class="ln">254  </span></a>    <span class="s1">print(</span><span class="s3">&quot;++++++++++++++++++++++++++++&quot;</span><span class="s1">)</span>
+<a name="l255"><span class="ln">255  </span></a>
+<a name="l256"><span class="ln">256  </span></a><span class="s0">######################################################################################################################</span>
+<a name="l257"><span class="ln">257  </span></a><span class="s0">###################################################결과물 추가##########################################################</span>
+<a name="l258"><span class="ln">258  </span></a><span class="s0"># 0번째 뉴스 요약</span>
+<a name="l259"><span class="ln">259  </span></a><span class="s0"># 서울시는 이날 압구정3구역 재건축 정비사업 추진 과정에서 서울시가 허용한 최대 용적률(300%)을 초과해 설계안을 제시한 희림에 대해 경찰에 고발조치 했다고 밝혔다.</span>
+<a name="l260"><span class="ln">260  </span></a><span class="s0"># ++++++++++++++++++++++++++++</span>
+<a name="l261"><span class="ln">261  </span></a><span class="s0"># 1번째 뉴스 요약</span>
+<a name="l262"><span class="ln">262  </span></a><span class="s0"># 전문가들은 최근 전셋값이 반등하고 있는 서울 강남권(강남, 서초, 송파구)이나 용산구, 마포구 등지에선 A씨 같은 사례가 많을 것으로 추정한다.</span>
+<a name="l263"><span class="ln">263  </span></a><span class="s0"># ++++++++++++++++++++++++++++</span>
+<a name="l264"><span class="ln">264  </span></a><span class="s0"># 2번째 뉴스 요약</span>
+<a name="l265"><span class="ln">265  </span></a><span class="s0"># 앞서 이 대표는 전날 최고위원회의에서 &quot;지금까지 많은 국정농단 사례들을 봐왔지만 수조원대 국책사업을 아무런 설명도 없이 갑자기 옮기는 건 처음 봤다.</span>
+<a name="l266"><span class="ln">266  </span></a><span class="s0"># ++++++++++++++++++++++++++++</span>
+<a name="l267"><span class="ln">267  </span></a><span class="s0"># 3번째 뉴스 요약</span>
+<a name="l268"><span class="ln">268  </span></a><span class="s0"># GS건설이 시공해 지난 3월 입주를 시작한 서울 강남구 신축 대단지가 11일 내린 폭우로 침수 피해가 발생했다.</span>
+<a name="l269"><span class="ln">269  </span></a><span class="s0"># ++++++++++++++++++++++++++++</span>
+<a name="l270"><span class="ln">270  </span></a><span class="s0"># 4번째 뉴스 요약</span>
+<a name="l271"><span class="ln">271  </span></a><span class="s0"># 시는 컨소시엄을 구성한 두 건축사무소가 압구정3구역(강남구 압구정동 396-1 일대) 정비계획안 수립을 위한 설계사 선정을 앞두고 시가 정한 용적률 등에</span>
+<a name="l272"><span class="ln">272  </span></a><span class="s0"># 부합하지 않는 설계안을 제시해 조합원, 주민 등을 속이려 했다고 지적했다.</span>
+<a name="l273"><span class="ln">273  </span></a><span class="s0"># ++++++++++++++++++++++++++++</span>
+<a name="l274"><span class="ln">274  </span></a><span class="s0"># 5번째 뉴스 요약</span>
+<a name="l275"><span class="ln">275  </span></a><span class="s0"># 국토교통부는 11일 정부세종청사에서 정자교 보도부 붕괴사고에 대해 국토안전관리원 사고조사위원회의 조사 결과를 발표했다.</span>
+<a name="l276"><span class="ln">276  </span></a><span class="s0"># ++++++++++++++++++++++++++++</span>
+<a name="l277"><span class="ln">277  </span></a><span class="s0"># 6번째 뉴스 요약</span>
+<a name="l278"><span class="ln">278  </span></a><span class="s0"># 해당 화환은 원 장관이 양평 고속도로 백지화를 두고 정치권 공방을 벌이고 있는 것과 관련 보수 지지자들이 보낸 것으로 추정된다.</span>
+<a name="l279"><span class="ln">279  </span></a><span class="s0"># ++++++++++++++++++++++++++++</span>
+<a name="l280"><span class="ln">280  </span></a><span class="s0"># 7번째 뉴스 요약</span>
+<a name="l281"><span class="ln">281  </span></a><span class="s0"># GS건설이 자회사 자이S&amp;D와 공동으로 개발한 공기 청정 시스템 ‘시스클라인’은 창문을 열지 않고도 외부 공기를 활용한 환기가 가능한 방식이다.</span>
+<a name="l282"><span class="ln">282  </span></a><span class="s0"># ++++++++++++++++++++++++++++</span>
+<a name="l283"><span class="ln">283  </span></a><span class="s0"># 번째 뉴스 요약</span>
+<a name="l284"><span class="ln">284  </span></a><span class="s0"># 특히 한국토지신탁은 동의서 징구 과정에서 SNS 라이브 방송을 통해 1:1 끝장 토론을 생중계하는 방식을 도입해 재건축 반대·상가 소유주 여론을 설득한 것으로 알려졌다.</span>
+<a name="l285"><span class="ln">285  </span></a><span class="s0"># ++++++++++++++++++++++++++++</span>
+<a name="l286"><span class="ln">286  </span></a><span class="s0"># 9번째 뉴스 요약</span>
+<a name="l287"><span class="ln">287  </span></a><span class="s0"># 강남권 중대형 아파트를 중심으로 거래량과 거래가가 동반 상승하며 매매 시장에 온기가 퍼지자 서울 전체 아파트 매매 거래량은 세 달 연속 3000건을 돌파했다.</span>
+<a name="l288"><span class="ln">288  </span></a><span class="s0"># ++++++++++++++++++++++++++++</span>
+<a name="l289"><span class="ln">289  </span></a><span class="s0">######################################################################################################################</span>
+<a name="l290"><span class="ln">290  </span></a>
+<a name="l291"><span class="ln">291  </span></a><span class="s0">#(4) 요약한 뉴스(리스트 구조)를 아래의 코드를 활용하여 txt 형식의 파일로 변환하여 제출하시오.</span>
+<a name="l292"><span class="ln">292  </span></a><span class="s2">import </span><span class="s1">pandas </span><span class="s2">as </span><span class="s1">pd</span>
+<a name="l293"><span class="ln">293  </span></a><span class="s2">import </span><span class="s1">numpy </span><span class="s2">as </span><span class="s1">np</span>
+<a name="l294"><span class="ln">294  </span></a><span class="s1">df = pd.DataFrame(snews_cont10, columns =[</span><span class="s3">'경제-부동산 뉴스 요약'</span><span class="s1">])</span>
+<a name="l295"><span class="ln">295  </span></a><span class="s1">df.to_csv(</span><span class="s3">&quot;news_summary&quot;</span><span class="s1">, header = </span><span class="s2">None</span><span class="s1">)</span>
+<a name="l296"><span class="ln">296  </span></a>
+<a name="l297"><span class="ln">297  </span></a><span class="s0">######################################################################################################################</span>
+<a name="l298"><span class="ln">298  </span></a><span class="s0">###################################################txt 파일 첨부하여 과제 제출###########################################</span>
+<a name="l299"><span class="ln">299  </span></a><span class="s0">######################################################################################################################</span>
+<a name="l300"><span class="ln">300  </span></a>
+<a name="l301"><span class="ln">301  </span></a>
+<a name="l302"><span class="ln">302  </span></a><span class="s0">#(5) 네이버 이메일을 이용하여 위의 txt 파일을 첨부한 이메일을 myungkim@sogang.ac.kr로 자동 전송하시오. 이메일 형식은 아래와 같이 작성하시오.</span>
+<a name="l303"><span class="ln">303  </span></a><span class="s0"># &lt;이메일 양식&gt;</span>
+<a name="l304"><span class="ln">304  </span></a><span class="s0"># Title: 경제-부동산 뉴스 요약(본인 이름)</span>
+<a name="l305"><span class="ln">305  </span></a><span class="s0"># Content: 경제-부동산 뉴스 요약 파일이 첨부된 이메일 자동화 전송 서비스입니다.</span>
+<a name="l306"><span class="ln">306  </span></a><span class="s0">#보고서를 이메일로 전송</span>
+<a name="l307"><span class="ln">307  </span></a><span class="s0"># 앞서 3개 함수 호출 필요: smtp_info, make_multimsg, send_email</span>
+<a name="l308"><span class="ln">308  </span></a><span class="s2">import </span><span class="s1">os</span>
+<a name="l309"><span class="ln">309  </span></a><span class="s2">from </span><span class="s1">email.mime.multipart </span><span class="s2">import </span><span class="s1">MIMEMultipart</span>
+<a name="l310"><span class="ln">310  </span></a><span class="s2">from </span><span class="s1">email </span><span class="s2">import </span><span class="s1">encoders</span>
+<a name="l311"><span class="ln">311  </span></a><span class="s2">from </span><span class="s1">email.mime.text </span><span class="s2">import </span><span class="s1">MIMEText</span>
+<a name="l312"><span class="ln">312  </span></a><span class="s2">from </span><span class="s1">email.mime.image </span><span class="s2">import </span><span class="s1">MIMEImage</span>
+<a name="l313"><span class="ln">313  </span></a><span class="s2">from </span><span class="s1">email.mime.audio </span><span class="s2">import </span><span class="s1">MIMEAudio</span>
+<a name="l314"><span class="ln">314  </span></a><span class="s2">from </span><span class="s1">email.mime.base </span><span class="s2">import </span><span class="s1">MIMEBase</span>
+<a name="l315"><span class="ln">315  </span></a><span class="s2">import </span><span class="s1">smtplib</span>
+<a name="l316"><span class="ln">316  </span></a>
+<a name="l317"><span class="ln">317  </span></a><span class="s1">smtp_info = dict({</span><span class="s3">&quot;smtp_server&quot;</span><span class="s1">:</span><span class="s3">&quot;smtp.naver.com&quot;</span><span class="s1">,</span>
+<a name="l318"><span class="ln">318  </span></a>                  <span class="s3">&quot;smtp_user_id&quot;</span><span class="s1">:</span><span class="s3">&quot;luisfynn@naver.com&quot;</span><span class="s1">,</span>
+<a name="l319"><span class="ln">319  </span></a>                  <span class="s3">&quot;smtp_user_pw&quot;</span><span class="s1">:</span><span class="s3">&quot;password 입력&quot;</span><span class="s1">,</span>
+<a name="l320"><span class="ln">320  </span></a>                  <span class="s3">&quot;smtp_port&quot;</span><span class="s1">:</span><span class="s4">587</span><span class="s1">})</span>
+<a name="l321"><span class="ln">321  </span></a>
+<a name="l322"><span class="ln">322  </span></a><span class="s2">def </span><span class="s1">make_multimsg(msg_dict):</span>
+<a name="l323"><span class="ln">323  </span></a>    <span class="s1">multi = MIMEMultipart(_subtype=</span><span class="s3">'mixed'</span><span class="s1">)</span>
+<a name="l324"><span class="ln">324  </span></a>    <span class="s2">for </span><span class="s1">key, value </span><span class="s2">in </span><span class="s1">msg_dict.items():</span>
+<a name="l325"><span class="ln">325  </span></a>        <span class="s2">if </span><span class="s1">key == </span><span class="s3">'text'</span><span class="s1">:</span>
+<a name="l326"><span class="ln">326  </span></a>            <span class="s2">with </span><span class="s1">open(value[</span><span class="s3">'filename'</span><span class="s1">], encoding=</span><span class="s3">'utf-8'</span><span class="s1">) </span><span class="s2">as </span><span class="s1">fp:</span>
+<a name="l327"><span class="ln">327  </span></a>                <span class="s1">msg = MIMEText(fp.read(), _subtype=value[</span><span class="s3">'subtype'</span><span class="s1">])</span>
+<a name="l328"><span class="ln">328  </span></a>        <span class="s2">elif </span><span class="s1">key == </span><span class="s3">'image'</span><span class="s1">:</span>
+<a name="l329"><span class="ln">329  </span></a>            <span class="s2">with </span><span class="s1">open(value[</span><span class="s3">'filename'</span><span class="s1">], </span><span class="s3">'rb'</span><span class="s1">) </span><span class="s2">as </span><span class="s1">fp:</span>
+<a name="l330"><span class="ln">330  </span></a>                <span class="s1">msg = MIMEImage(fp.read(), _subtype=value[</span><span class="s3">'subtype'</span><span class="s1">])</span>
+<a name="l331"><span class="ln">331  </span></a>        <span class="s2">elif </span><span class="s1">key == </span><span class="s3">'audio'</span><span class="s1">:</span>
+<a name="l332"><span class="ln">332  </span></a>            <span class="s2">with </span><span class="s1">open(value[</span><span class="s3">'filename'</span><span class="s1">], </span><span class="s3">'rb'</span><span class="s1">) </span><span class="s2">as </span><span class="s1">fp:</span>
+<a name="l333"><span class="ln">333  </span></a>                <span class="s1">msg = MIMEAudio(fp.read(), _subtype=value[</span><span class="s3">'subtype'</span><span class="s1">])</span>
+<a name="l334"><span class="ln">334  </span></a>        <span class="s2">else</span><span class="s1">:</span>
+<a name="l335"><span class="ln">335  </span></a>            <span class="s2">with </span><span class="s1">open(value[</span><span class="s3">'filename'</span><span class="s1">], </span><span class="s3">'rb'</span><span class="s1">) </span><span class="s2">as </span><span class="s1">fp:</span>
+<a name="l336"><span class="ln">336  </span></a>                <span class="s1">msg = MIMEBase(value[</span><span class="s3">'maintype'</span><span class="s1">], _subtype=value[</span><span class="s3">'subtype'</span><span class="s1">])</span>
+<a name="l337"><span class="ln">337  </span></a>                <span class="s1">msg.set_payload(fp.read())</span>
+<a name="l338"><span class="ln">338  </span></a>                <span class="s1">encoders.encode_base64(msg)</span>
+<a name="l339"><span class="ln">339  </span></a>        <span class="s1">msg.add_header(</span><span class="s3">'Content-Disposition'</span><span class="s1">, </span><span class="s3">'attachment'</span><span class="s1">, filename=os.path.basename(value[</span><span class="s3">'filename'</span><span class="s1">]))</span>
+<a name="l340"><span class="ln">340  </span></a>        <span class="s1">multi.attach(msg)</span>
+<a name="l341"><span class="ln">341  </span></a>    <span class="s2">return </span><span class="s1">multi</span>
+<a name="l342"><span class="ln">342  </span></a>
+<a name="l343"><span class="ln">343  </span></a><span class="s2">def </span><span class="s1">send_email(smtp_info, msg):</span>
+<a name="l344"><span class="ln">344  </span></a>    <span class="s2">with </span><span class="s1">smtplib.SMTP(smtp_info[</span><span class="s3">&quot;smtp_server&quot;</span><span class="s1">], smtp_info[</span><span class="s3">&quot;smtp_port&quot;</span><span class="s1">]) </span><span class="s2">as </span><span class="s1">server:</span>
+<a name="l345"><span class="ln">345  </span></a>        <span class="s1">server.starttls() </span><span class="s0">#TLS 보안 연결</span>
+<a name="l346"><span class="ln">346  </span></a>        <span class="s1">server.login(smtp_info[</span><span class="s3">&quot;smtp_user_id&quot;</span><span class="s1">], smtp_info[</span><span class="s3">&quot;smtp_user_pw&quot;</span><span class="s1">]) </span><span class="s0"># 로그인</span>
+<a name="l347"><span class="ln">347  </span></a>        <span class="s0"># 로그인된 서버에 이메일 전송</span>
+<a name="l348"><span class="ln">348  </span></a>        <span class="s1">response = server.sendmail(msg[</span><span class="s3">'from'</span><span class="s1">], msg[</span><span class="s3">'to'</span><span class="s1">], msg.as_string())</span>
+<a name="l349"><span class="ln">349  </span></a>
+<a name="l350"><span class="ln">350  </span></a>        <span class="s2">if not </span><span class="s1">response:</span>
+<a name="l351"><span class="ln">351  </span></a>            <span class="s1">print(</span><span class="s3">'이메일을 성공적으로 보냈습니다.'</span><span class="s1">)</span>
+<a name="l352"><span class="ln">352  </span></a>        <span class="s2">else</span><span class="s1">:</span>
+<a name="l353"><span class="ln">353  </span></a>            <span class="s1">print(response)</span>
+<a name="l354"><span class="ln">354  </span></a>
+<a name="l355"><span class="ln">355  </span></a><span class="s1">title = </span><span class="s3">'경제-부동산 뉴스 요약(이태환)'</span>
+<a name="l356"><span class="ln">356  </span></a><span class="s1">content = </span><span class="s3">'경제-부동산 뉴스 요약 파일이 첨부된 이메일 자동화 전송 서비스입니다'</span>
+<a name="l357"><span class="ln">357  </span></a><span class="s1">sender = smtp_info[</span><span class="s3">'smtp_user_id'</span><span class="s1">]</span>
+<a name="l358"><span class="ln">358  </span></a><span class="s1">receiver =</span><span class="s3">'myungkim@sogang.ac.kr'</span>
+<a name="l359"><span class="ln">359  </span></a><span class="s0">#receiver ='luisfynn1@gmail.com' #&lt;-------------------------------------------------------------------------------변경필요</span>
+<a name="l360"><span class="ln">360  </span></a><span class="s1">msg = MIMEText(_text = content, _charset = </span><span class="s3">'utf-8'</span><span class="s1">)</span>
+<a name="l361"><span class="ln">361  </span></a>
+<a name="l362"><span class="ln">362  </span></a><span class="s0"># 첨부파일 지정</span>
+<a name="l363"><span class="ln">363  </span></a><span class="s1">msg_dict = {</span>
+<a name="l364"><span class="ln">364  </span></a><span class="s3">'application'</span><span class="s1">: {</span><span class="s3">'maintype'</span><span class="s1">: </span><span class="s3">'application'</span><span class="s1">, </span><span class="s3">'subtype'</span><span class="s1">: </span><span class="s3">'octect-stream'</span><span class="s1">, </span><span class="s3">'filename'</span><span class="s1">:</span><span class="s3">'news_summary.txt'</span><span class="s1">}</span>
+<a name="l365"><span class="ln">365  </span></a><span class="s1">}</span>
+<a name="l366"><span class="ln">366  </span></a>
+<a name="l367"><span class="ln">367  </span></a><span class="s0"># 첨부파일 추가</span>
+<a name="l368"><span class="ln">368  </span></a><span class="s1">file = os.path.join(</span><span class="s3">'C:/Users/LUIS/WorkSpace/AI_MBA/Artificial intelligence application practice'</span><span class="s1">, </span><span class="s3">'news_summary.txt'</span><span class="s1">) </span><span class="s0">#&lt;-------------------------------------변경필요</span>
+<a name="l369"><span class="ln">369  </span></a><span class="s1">msg_dict[</span><span class="s3">'application'</span><span class="s1">][</span><span class="s3">'filename'</span><span class="s1">] = file </span><span class="s0"># PPT 형식 파일 지정</span>
+<a name="l370"><span class="ln">370  </span></a><span class="s1">multi = make_multimsg(msg_dict) </span><span class="s0"># msg_dict 안의 파일을 첨부함</span>
+<a name="l371"><span class="ln">371  </span></a><span class="s1">multi[</span><span class="s3">'Subject'</span><span class="s1">] = title</span>
+<a name="l372"><span class="ln">372  </span></a><span class="s1">multi[</span><span class="s3">'From'</span><span class="s1">] = sender</span>
+<a name="l373"><span class="ln">373  </span></a><span class="s1">multi[</span><span class="s3">'To'</span><span class="s1">] = receiver</span>
+<a name="l374"><span class="ln">374  </span></a><span class="s1">multi.attach(msg)</span>
+<a name="l375"><span class="ln">375  </span></a><span class="s0"># 이메일 전송</span>
+<a name="l376"><span class="ln">376  </span></a><span class="s1">send_email(smtp_info, multi)</span>
+<a name="l377"><span class="ln">377  </span></a>
+<a name="l378"><span class="ln">378  </span></a><span class="s0">######################################################################################################################</span>
+<a name="l379"><span class="ln">379  </span></a><span class="s0">###################################################메일 발송 여부 확인###################################################</span>
+<a name="l380"><span class="ln">380  </span></a><span class="s0">######################################################################################################################</span></pre>
+</body>
+</html>
