@@ -1,0 +1,153 @@
+---
+title: "ABF_Week2_KB_Analysis"
+author: "taehwan.lee"
+date: "2024-01-03"
+output: word_document
+---
+
+```{r}
+library(zoo)
+library(tidyverse)
+library(quantmod)
+library(fBasics)
+library(rugarch)
+library(xts)
+library(PerformanceAnalytics)
+```
+
+```{r}
+Env=new.env()
+getSymbols("KB", env=Env, src="yahoo", from="2007-01-01", to="2020-10-30")
+KBG=Env$KB[,6]
+```
+
+```{r}
+KBG
+```
+
+```{r}
+plot(KBG, main="KB analysis", ylab="Price", xlab="Date")
+```
+```{r}
+length(KBG); which.max(KBG); KBG[which.max(KBG)]; KBG[which.min(KBG)]
+```
+2007년 4월 12일에 96.57로 가장 가격이 높았고, 2008년 11월 20일 14.7로 가격이 낮아졌으며, 소폭 상향하여 안정화를 유지하다 2016년 경부터 가격이 크게 변동하고 있다.
+
+```{r}
+#simple return
+SimpleR <- diff(KBG)/stats::lag(KBG, k=-1)*100
+summary(coredata(SimpleR))
+```
+```{r}
+diff(KBG)
+```
+
+```{r}
+stats::lag(KBG, k=-1)
+```
+
+
+```{r}
+hist(coredata(SimpleR), xlim = c(-20, 20), ylim =c(0,1500), breaks = 20)
+```
+KB 그룹의 경우 보편적인 경우와 달리 0을 기준으로 좌우 대칭인 형태를 보여준다.
+
+```{r}
+#Var
+#na 값이 있어 제거 후 확인
+quantile(SimpleR, probs =c(0.05, 0.01), na.rm = T)
+```
+해당 기간의 KB금융그룹은 하위 5%에서 나타날 수 있는 최악의 손실은 -4.04%이고, 하위 1%에서 나타날 수 있는 최악의 손실은 -8.43%였다.
+
+
+
+```{r}
+#closing Price
+chartSeries(Cl(Env$KB))
+```
+
+```{r}
+#일간 로그 수익률
+# Ret <- dailyReturn(Ad(Env$KB$KB.Adjusted), type="log")
+Ret <- dailyReturn(Ad(KBG), type="log")
+Ret
+```
+로그 수익률을 그린 그래프는 다음과 같다.
+
+```{r}
+par(mfrow=c(1,2))
+plot(Ret, main ="Return")
+plot(abs(Ret), main ="Absolute Value of Return")
+```
+```{r}
+R_mean <- mean(Ret); R_sd <- sd(Ret)
+hist(Ret, nclass = 40, freq = FALSE, main ="Histogram of Return")
+plot(density(Ret), main = "Distribution of Return")
+```
+
+x 값을 -0.2 ~ 0.2 범위로 하여 평균 R_mean, 표준편차 R_sd를 갖는 정규분포를 그려보면 다음과 같다.
+```{r}
+R_mean <- mean(Ret); R_sd <- sd(Ret)
+hist(Ret, nclass = 40, freq = FALSE, main ="Histogram of Return")
+plot(density(Ret), main = "Distribution of Return")
+
+x <- seq(-0.2,0.2,0.01)
+curve(dnorm(x, R_mean, R_sd), from = -0.2, to = 0.2, add = TRUE, col = "Blue", lwd = 2)
+```
+```{r}
+plot(density(Ret), xlim = c(-0.1, 0), main = "Lower tail Distribution of Return")
+
+x <- seq(-0.1, 0,0.01)
+curve(dnorm(x, R_mean, R_sd), from = -0.1, to = 0, add = TRUE, col = "Blue", lwd = 2)
+```
+
+```{r}
+kurtosis(Ret)
+```
+
+첨도는 10으로 정규분포보다 매우 뾰족하고, 꼬리는 정규분포보다 두껍지 않았다.
+
+```{r}
+tg11_spec<-ugarchspec(variance.model = list(model = "fGARCH", submodel = "TGARCH", garchOrder = c(1,1)), mean.model = list(armaOrder = c(0,0)))
+tg11_fit <- ugarchfit(spec=tg11_spec, data = Ret)
+coef(tg11_fit)
+```
+
+변동성은 다음의 값으로 추정할 수 있다. 
+           mu         omega        alpha1         beta1         eta11 
+-0.0001958439  0.0002594603  0.0598310475  0.9430914174  0.5074048612 
+
+일일 수익률로 산출하였으므로, 평균 수익률은 -0.0002로 낮고, 장기분산 값은 0.0003이며, beta1값이 alpha1값보다 크므로, 과거분산의 영향력이 큰 것을 알 수 있다.
+
+
+```{r}
+tg11_impact<-newsimpact(tg11_fit)
+plot(tg11_impact$zx, tg11_impact$zy, type = "l", col="red", lwd = 2, main ="News Impact Analysis", xlab = tg11_impact$xexpr, ylab = tg11_impact$yexpr)
+```
+충격이 나타날 경우 위 그래프와 같이 긍정일 경우에 비해 부정일 경우 변동성이 크게 변함을 알 수 있다.
+zy: sigma[t]^2
+zx: epsilin[t-1]
+```{r}
+tg11_impact
+```
+```{r}
+summary(coredata(SimpleR))
+```
+simple return의 사분위값을 확인하면 위와 같다. 1사분위 값보다 훨씬 작은 Min값과 3사분위수보다 큰 값 max값값을 이상치로 판단하였고
+2008년 10월 ~11월에 어떤 사건이 있었는지 확인해 본 결과 2008년 10월 10일 한국거래소에 주식을 상장하였으며, 11월은 정확하진 않지만 금융위기의 영향이지 않을까 생각된다.
+
+
+```{r}
+#이상치판정
+#3사분위 수보다 상당히 큰 값 또는 1사분위수보다 상당히 작은 값을 갖는 경우를 이상치로 본다면, 대표적으로 최대값, 최소값을 갖는
+#날짜를 이상치라고 볼 수 있을 것이다.
+length(coredata(SimpleR)); which.max(coredata(SimpleR)); SimpleR[which.max(coredata(SimpleR))]; SimpleR[which.min(coredata(SimpleR))]
+```
+
+```{r}
+summary(coredata(SimpleR))
+```
+```{r}
+SimpleR
+```
+

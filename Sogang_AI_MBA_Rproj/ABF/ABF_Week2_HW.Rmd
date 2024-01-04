@@ -47,6 +47,12 @@ aapl[3200]
 SimpleR <- diff(aapl)/stats::lag(aapl, k=-1)*100
 summary(coredata(SimpleR))
 ```
+```{r}
+diff(aapl)
+```
+```{r}
+stats::lag(aapl, k=-1)
+```
 
 ```{r}
 #지속적인 복리 수익률
@@ -229,7 +235,8 @@ print(ts2, calendar = TRUE)
 ```
 
 ```{r}
-xts2 <- as.xts(ts2)
+#error: Error in as.xts.ts(ts2) : could not convert index to appropriate type
+#xts2 <- as.xts(ts2)
 ```
 ```{r}
 aapl <- read.csv("aapl.csv", h= T)
