@@ -1,0 +1,139 @@
+---
+title: "ABF"
+author: "taehwan.lee"
+date: "2024-01-10"
+output: word_document
+---
+
+```{r}
+.libPaths()
+```
+
+```{r}
+library(zoo)
+library(tidyverse)
+library(quantmod)
+library(fBasics)
+library(rugarch)
+library(xts)
+library(PerformanceAnalytics)
+library(timeSeries)
+library(fPortfolio)
+library(Quandl)
+```
+
+```{r}
+a=seq(0,1,0.01)
+v=sqrt(a^2*10^2+(1-a)^2*10^2-2*a*(1-a)*0.8*10^2) #음의 상관관계
+v1=sqrt(a^2*10^2+(1-a)^2*10^2+2*a*(1-a)*0.8*10^2)#양의 상관관계
+v2=sqrt(a^2*10^2+(1-a)^2*10^2)#상관관계 없음
+plot(a,v, type="l", lwd=2, xlab="Portfolio Weight", ylab="Volatility", main="Volatility Effect Through Portfolio")
+lines(a,v1,type="b")
+lines(a,v2, type="s")
+```
+
+```{r}
+#Quandl.api_key("4pW9saxCZAyCgP6sy1v5")
+#update
+s1 = getSymbols("AAPL", from="2013-01-01", to="2015-12-31", auto.assign= F) 
+s2 = getSymbols("WMT", from="2013-01-01", to="2015-12-31", auto.assign= F) 
+s3 = getSymbols("MSFT", from="2013-01-01", to="2015-12-31", auto.assign= F) 
+s4 = getSymbols("IBM", from="2013-01-01", to="2015-12-31", auto.assign= F) 
+# s1 <- Quandl("WIKI/AAPL", start_date="2014-04-04", end_date="2017-03-27")
+# s2 <- Quandl("WIKI/WMT", start_date="2014-04-04", end_date="2017-03-27")
+# s3 <- Quandl("WIKI/MSFT", start_date="2014-04-04", end_date="2017-03-27")
+# s4 <- Quandl("WIKI/IBM", start_date="2014-04-04", end_date="2017-03-27")
+# s1 <- Quandl("EOD/AAPL", start_date="2013-01-01", end_date="2015-12-31")
+# s2 <- Quandl("EOD/WMT", start_date="2013-01-01", end_date="2015-12-31")
+# s3 <- Quandl("EOD/MSFT", start_date="2013-01-01", end_date="2015-12-31")
+# s4 <- Quandl("EOD/IBM", start_date="2013-01-01", end_date="2015-12-31")
+# summary(s1)
+# summary(s2)
+# summary(s3)
+# summary(s4)
+```
+
+```{r}
+# assets=as.ts(cbind(s1[,1], s1[,12], s2[,12], s3[,12], s4[,12]))
+# assets=as.ts(cbind(s1[,1], s1[,5], s2[,5], s3[,5], s4[,5]))
+# colnames(assets)=c("Date", "Apple", "WalMart", "MS", "IBM")
+# assets=assets[order(assets[,1]),]
+# head(assets)
+assets = merge(s1[ ,6], s2[ ,6], s3[ ,6], s4[ ,6]) 
+colnames(assets)=c("Apple", "WalMart", "MS", "IBM") 
+class(assets) 
+head(assets) 
+```
+```{r}
+# r=as.xts(returns(assets)[-1,-1], order.by=as.Date(assets[-1,1]))
+r=as.xts(returns(assets)[-1, ])
+head(r)
+```
+```{r}
+chart.CumReturns(r, legend.loc='topleft', main="Cumulative Returns for 4 US companies")
+```
+```{r}
+# r <- timeSeries(returns(assets)[-1,-1])
+r <- timeSeries(returns(assets)[-1, ])
+head(r)
+plot(portfolioFrontier(r) ,c(1, 3))
+#c(1,3)은 portfolioFrontier 옵션 중 1번, 3번을 동시에 선택한다는 의미인 것 같다.
+# 1:   Plot Efficient Frontier
+# 2:   Add Minimum Risk Portfolio
+# 3:   Add Tangency Portfolio
+# 4:   Add Risk/Return of Single Assets
+# 5:   Add Equal Weights Portfolio
+# 6:   Add Two Asset Frontiers [LongOnly Only]
+# 7:   Add Monte Carlo Portfolios
+# 8:   Add Sharpe Ratio [Markowitz PF Only]
+```
+
+```{r}
+Spec=portfolioSpec() 
+setSolver(Spec)="solveRshortExact" 
+setTargetReturn(Spec)=mean(r) 
+maxreturnPortfolio(r, Spec, 'Short') 
+efficientPortfolio(r, Spec, 'Short') 
+minvariancePortfolio(r, Spec, 'Short') 
+minriskPortfolio(r, Spec, 'Short')
+```
+
+```{r}
+#Example of CAPM
+Env=new.env()
+getSymbols("GOOG", from="2009-06-01", to="2013-06-01")
+GL=GOOG[ ,6] # Adj. Close Price
+getSymbols("^GSPC", from="2009-06-01", to="2013-06-01")
+SP=GSPC[ ,6] # Adj. Close S&P Index
+
+L=Quandl("FRED/USDONTD156N", from="2009-06-01", to="2013-06-01", type='xts')
+Rf=L["2009-06-01/2013-06-01",]   # London Interbank Offered Rate (LIBOR)
+sapply(list(GL, SP, Rf), length) # 날짜가 매칭이 되지 않고 데이터  길이도 다름
+##   [1] 1008 1008  987
+
+CommonDate=as.Date(Reduce(intersect, list(index(GL), index(SP), index(Rf))))
+GL=GL[CommonDate, ]
+SP=SP[CommonDate, ]
+Rf=Rf[CommonDate, ]
+sapply(list(GL,SP,Rf), length)
+##   [1] 981 981 981
+
+Rft=log(1+Rf[-1, ])/36000*as.numeric(diff(CommonDate))
+ri_f=diff(log(GL))[-1,] - Rft   # Security Risk Premium
+rm_f=diff(log(SP))[-1,] - Rft   # Market Risk Premium
+cov(ri_f,rm_f)/var(rm_f)
+# 구글의 베타 : 0.9022
+
+fit=lm(ri_f ~ rm_f)
+summary(fit)
+```
+
+```{r}
+plot(coredata(rm_f),coredata(ri_f), xlab="Market Risk Premium", ylab="Security Risk Premium", main="SCL and MRP")
+abline(fit, lwd=2, col='red')
+abline(a=0, b=1, lwd=2, col='black')
+summary(lm(ri_f ~ rm_f - 1))
+par(mfrow=c(2,2))
+plot(fit)
+```
+
