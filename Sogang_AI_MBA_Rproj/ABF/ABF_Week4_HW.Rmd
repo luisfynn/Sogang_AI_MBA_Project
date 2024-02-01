@@ -1,0 +1,156 @@
+---
+title: "ABF_Week4_HW"
+author: "taehwan.lee"
+date: "2024-01-24"
+output:
+  word_document: default
+---
+```{r}
+library(quantmod)
+getSymbols("KB", from = "2020-01-01", to = "2020-08-31")
+Price = Ad(KB)
+chartSeries(Price, theme = chartTheme("white"), TA = "addRSI(10) ; addEMA(10); addMACD(10)")
+```
+
+```{r}
+chartSeries(Price, theme = chartTheme("white"))
+addBBands()
+```
+
+```{r}
+chartSeries(Price, theme = chartTheme("white"))
+addBBands(5,1)
+```
+```{r}
+chartSeries(KB, theme = chartTheme("white"), TA = "addSMA(3)")
+```
+
+
+```{r}
+getSymbols("KB", from = "2020-01-01", to = "2020-12-31")
+Price<-Cl(KB)
+HLC<-matrix(c(Hi(KB), Lo(KB), Cl(KB)), nrow = length(Hi(KB)))
+library(TTR)
+r<- diff(log(Price))
+rsi<-RSI(Price)
+MACD<-MACD(Price)
+macd<-MACD[,1]
+will<-williamsAD(HLC)
+cci <- CCI(HLC)
+STOCH <- stoch(HLC)
+stochK <- STOCH[, 1]
+stochD <- STOCH[, 2]
+
+input <- matrix(c(as.numeric(rsi[26:242]), cci[26:242], as.numeric(macd[26:242]), will[26:242], stochK[26:242], stochD[26:242]), nrow = 217)
+Target <- matrix(c(r[27:243]), nrow = 217)
+trainingdata <- cbind(input, Target)
+colnames(trainingdata) <- c("RSI", "CCI", "MACD", "WILL", "STOCHK", "STOCHD", "Return")
+
+library(caret)
+trainIndex <- createDataPartition(1:217, p=.8, list = F)
+Train <- trainingdata[trainIndex,]
+Valid <- trainingdata[-trainIndex, ]
+
+library(nnet)
+best.network <- matrix(0,2)
+best.mae <- 1
+
+for (i in seq(10, 100, 5)) for(j in c(0.01, 0.001, 0.0001)){
+  Fit = nnet(Return ~ RSI + CCI + MACD + WILL + STOCHK +STOCHD, data = Train, maxit = 1000, size = i, decay = j,
+             trace = FALSE, linout = TRUE)
+  Predict = predict(Fit, newdata = Valid)
+  mae1 = mean(abs(Predict - Valid[,7]))
+  if (mae1 < best.mae){
+    best.network[1] <- i
+    best.network[2] <- j
+    best.mae = mae1
+  }
+}
+
+```
+```{r}
+InputTest <- matrix(c(as.numeric(rsi[243:251]), cci[243:251], as.numeric(macd[243:251]), will[243:251], stochK[243:251], stochD[243:251]), nrow = 9)
+TargetTest <- matrix(c(r[244:252]), nrow = 9)
+Testdata = cbind(InputTest, TargetTest)
+colnames(Testdata) <- c("RSI", "CCI", "MACD", "WILL", "STOCHK", "STOCHD", "Return")
+
+Fit = nnet(Return ~ RSI + CCI + MACD + WILL + STOCHK +STOCHD, data = Train, maxit = 3000, size = best.network[1], decay = best.network[2],trace = FALSE, linout = TRUE)
+
+Predict1 <- predict(Fit, newdata = Testdata)
+#repeat the best model 50 times
+for(i in 1:50){
+  Fit = nnet(Return ~ RSI + CCI + MACD + WILL + STOCHK +STOCHD, data = Train, maxit = 3000, size = best.network[1],
+             decay = best.network[2],trace = FALSE, linout = TRUE)
+  Predict1 <- Predict1 + predict(Fit, newdata = Testdata)
+}
+
+Predict1 <- Predict1/51
+Predict1
+```
+
+```{r}
+matplot(cbind(Testdata[,7], Predict1), type = "l", lwd = 2, xaxt = "n", ylab = "")
+legend("topleft", legend = c("Predicted Values", "Observed Values"), lwd = 1.5, pch = 19, col = c("red", "black"))
+axis(1, at = c(1,5,9), lab = c("2020-12-17", "2020-12-23", "2020-12-30"))
+mtext(side = 1, "Transaction Date", line = 2)
+mtext(side = 2, "Return Rate", line = 2)
+```
+
+```{r}
+library("devtools")
+library("reshape2")
+library("NeuralNetTools")
+plotnet(Fit)
+```
+```{r}
+garson(Fit)
+```
+
+
+```{r}
+library(neuralnet)
+set.seed(10000)
+Formula <- Return ~ RSI + CCI + MACD + WILL + STOCHK + STOCHD
+DNN1 <- neuralnet(Formula, data = trainingdata, hidden = c(10,12,20), algorithm = "rprop+", err.fct ="sse",
+                  act.fct="tanh", threshold = 0.01, linear.output = TRUE)
+
+plot(DNN1)
+```
+
+```{r}
+plotnet(DNN1)
+```
+
+```{r}
+DNN1 <- neuralnet(Formula, data = trainingdata, hidden = c(10, 12, 20), rep = 10, algorithm = "rprop-", err.fct = "sse", act.fct = "logistic", threshold = 0.001, linear.output = TRUE)
+```
+
+```{r}
+library(TTR)
+MinMax <- function(x) {
+  return((x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE)))
+}
+r <- as.numeric(diff(log(Price)))
+print(head(r))
+r = MinMax(r)
+print(head(r))
+```
+
+```{r}
+rsi <- as.numeric(diff(log(Price)))
+print(head(rsi))
+rsi = MinMax(rsi)
+print(head(rsi))
+```
+
+
+```{r}
+MACD <- MACD(Price)
+macd <- as.numeric(MACD[, 1]); macd <- MinMax(macd)
+will <- as.numeric(williamsAD(HLC)); will <- MinMax(will)
+cci <- as.numeric(CCI(HLC)); cci <- MinMax(cci)
+STOCH <- stoch(HLC)
+stochK <- as.numeric(STOCH[,1]); stochK <- MinMax(stochK)
+stochD <- as.numeric(STOCH[,2]); stochD <- MinMax(stochD)
+```
+

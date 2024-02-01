@@ -1,0 +1,163 @@
+---
+title: "ABF_Week5_HW"
+author: "taehwan.lee"
+date: "2024-01-30"
+output: word_document
+---
+r markdown 미러 설정
+```{r}
+options(repos = c(CRAN = "https://cran.r-project.org"))
+```
+
+Odds:오즈
+
+오즈의 특징
+•음수의 값을 가질 수 없음
+•확률 0 이면 오즈도 0, 확률이 0.5 이면 오즈는 1, 확률이 1 이면 오즈는 ∞
+•오즈와 확률의 관계식의 문제 -> 오즈값의 불균형성
+
+```{r}
+p=seq(0.01,0.99,0.01) #0.01에서 0.99까지 0.01 단위로 숫자 생성
+odds=p/(1-p)
+plot(p[1:95],odds[1:95], type="l", lwd=2, main="Odds and Probability", xlab="Probability", 
+ylab="Odds")
+abline(h=1); abline(v=0.5)
+```
+Log Odds:로그오즈
+
+로그 오즈의 특징
+•--∞ ~ + ∞ 값을 가짐
+•확률 0 이면 로그 오즈는 --∞ , 확률이 0.5 이면 로그 오즈는 0, 확률이 1 이면 +∞
+•로그 오즈는 부드러운 균형성을 가짐
+
+```{r}
+p=seq(0.01,0.99,0.01) #0.01에서 0.99까지 0.01 단위로 숫자 생성
+ln_odds=log(p /(1-p))
+plot(p , ln_odds, type="l", lwd=2, main="Odds and Probability", xlab="Probability",ylab="Log Odds")
+abline(h=0); abline(v= 0.5)
+```
+예제
+```{r}
+wt=c(40,143,10,101)
+gender=factor(c(rep("girl",2),rep("boy",2))) #gender [1] girl girl boy  boy // Levels: boy girl
+y=as.factor(rep(c("1buy","0N_buy"),2)) #앞에 숫자를 붙인 이유는 not_buy레벨을 0으로 만들기 위함
+levels(gender) #알파벳 순으로 레벨 순서 결정
+levels(y)
+model1 <- glm(y ~ gender, weights=wt, family=binomial())
+summary(model1)
+```
+
+
+```{r}
+exp(coef(model1)) # Odds Ratio: exponentiated coefficients
+```
+신뢰구간
+```{r}
+exp(confint(model1)) # 95% CI for Odds Ratio
+```
+```{r}
+exp(confint(model1, level = 0.99)) # 99% CI for Odds Ratio
+```
+예측확률 추정
+```{r}
+predict(model1, list(gender=c("girl","boy")), type="response")
+```
+
+
+
+```{r}
+wt1=c(3,5,4,8,7)
+wt2=10 - wt1
+
+wt=as.numeric(rbind(wt1,wt2)) #표를 토대로 가중치를 만들기
+# rbind(wt1,wt2)
+#     [,1] [,2] [,3] [,4] [,5]
+# wt1    3    5    4    8    7
+# wt2    7    5    6    2    3
+
+# wt
+# [1] 3 7 5 5 4 6 8 2 7 3
+x=rep(1:5,rep(2,5))
+# rep(2,5)
+# [1] 2 2 2 2 2
+
+# rep(1:5,rep(2,5)) 1~5를 2번씩 반복
+# [1] 1 1 2 2 3 3 4 4 5 5
+
+y=factor(rep(c("1buy","0N_buy"),5))
+# [1] 1buy   0N_buy 1buy   0N_buy 1buy   0N_buy 1buy   0N_buy 1buy   0N_buy
+# Levels: 0N_buy 1buy
+model2 <- glm(y ~ x, weights=wt, family=binomial())
+summary(model2)
+```
+
+```{r}
+wt=stack(as.data.frame(cbind(wt1,wt2)))$values
+x=rep(1:5,2)
+y=factor(c(rep("1buy",5),rep("0N_buy",5)))
+
+model2 <- glm(y ~ x, weights=wt, family=binomial())
+summary(model2)
+```
+
+```{r}
+exp(coef(model2)) # Odds Ratio: exponentiated coefficients
+exp(confint(model2)*2) # 95% CI for Odds Ratio of 2 level difference
+predict(model2, list(x=3), type="response")
+```
+#모델 선택 backward 방법
+```{r}
+# da1=read.table("clipboard", h=T) #finance.txt의 데이터부분을 복사(ctrl + c)한 후 이 코드를 실행한다.
+da1=read.csv("finance.csv", h=T)
+da1$y=as.factor(da1$y)
+model4 <- glm(y ~ x1+x2+x3+x4, family=binomial(), data=da1)
+
+scope = formula(~ x1+x2+x3+x4)
+null = glm(y ~ 1, family=binomial(), data=da1)
+step(model4, direction="backward")
+```
+#모델 선택 forward 방법
+```{r}
+step(null, scope, direction="forward")
+```
+#모델 선택 Stepwise(both) 방법
+```{r}
+step(null, scope, direction="both")
+```
+
+```{r}
+model5 <- glm(y ~ x1+x3, family=binomial(), data=da1)
+anova(model4, model5, test="Chisq") # model5 is our final model!
+```
+이 분산 분석 표(Analysis of Deviance Table)는 로지스틱 회귀분석 또는 일반화 선형 모델(GLM)에서 두 모델의 적합도를 비교하는 데 사용됩니다. 여기서, Model 1은 변수 x1, x2, x3, x4를 포함하고, Model 2는 변수 x1, x3만을 포함합니다. 분석의 목적은 두 모델 간의 차이가 통계적으로 유의한지를 평가하는 것입니다.
+
+분산 분석 표의 주요 항목을 해석해 보겠습니다:
+
+Resid. Df: 잔차의 자유도(residual degrees of freedom)입니다. 
+모델이 데이터에 적합할수록 이 값은 작아집니다. 
+Model 1의 경우 41, Model 2의 경우 43입니다.
+
+Resid. Dev: 잔차의 편차(residual deviance)입니다. 모델이 데이터를 얼마나 잘 설명하는지를 나타내는 지표로, 낮을수록 모델의 적합도가 좋다고 해석됩니다. Model 1의 경우 27.660, Model 2의 경우 28.573입니다.
+
+Df: 자유도 차이로, Model 1과 Model 2 간의 변수 개수 차이를 의미합니다. 여기서는 2입니다.
+
+Deviance: 두 모델 간의 편차 차이로, Model 2의 잔차 편차에서 Model 1의 잔차 편차를 뺀 값입니다. 여기서는 0.91228입니다.
+
+Pr(>Chi): 카이제곱 검정을 통해 계산된 p-value로, 두 모델 간의 차이가 통계적으로 유의한지를 나타냅니다. 여기서는 0.6337입니다.
+p-value가 0.05보다 크므로, 통계적으로 유의미한 수준에서 Model 1과 Model 2 간에는 유의미한 차이가 없다고 결론지을 수 있습니다. 이는 x2와 x4 변수를 제거한 Model 2가 Model 1에 비해 유의미하게 성능이 떨어지지 않음을 의미합니다. 즉, 더 단순한 Model 2도 데이터를 설명하는 데 있어 Model 1만큼 효과적이라고 볼 수 있습니다.
+
+결론적으로, Model 1과 Model 2는 통계적으로 유의미한 차이가 없으므로, 변수의 수를 줄인 Model 2를 선호할 수 있습니다. 이는 Occam's razor(오캄의 면도날) 원칙에 따라, 불필요한 복잡성을 피하고 가능한 가장 단순한 모델을 선택하는 것이 좋다는 원칙과 일치합니다.
+
+
+# ROC (Receiver Operating Characteristic) curve
+```{r}
+install.packages("ROCR")
+library(ROCR)
+score = predict(model5, type = 'response', da1)
+pred = prediction(score, da1$y)
+perf = performance(pred, "tpr", "fpr")
+plot(perf, colorize = TRUE, main = "ROC Curve")
+text(0.2, 0.6, adj = 0, labels = "AUROC(the Area Under an ROC Curve")
+text(0.2, 0.45, adj = 0, labels = "- ROC Curve 아래면적을 가르킴")
+```
+
