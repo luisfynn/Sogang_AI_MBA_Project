@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results</title>
+</head>
+<body>
+    <h1>Similar Products</h1>
+    <ul>
+        {% for result in results %}
+            <li>
+                <img src="{{ result.image }}" alt="Product Image">
+                <a href="{{ result.url }}">View Product</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
