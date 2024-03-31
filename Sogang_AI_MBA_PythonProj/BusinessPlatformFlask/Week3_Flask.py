@@ -42,6 +42,9 @@ def naver():
         wait = WebDriverWait(driver, 15)
         url = "https://news.naver.com/main/main.naver?mode=LSD&mid=shm&sid1=100"
         driver.get(url)
+
+    #reservation
+
     return render_template("naver_articles.html", context = article_titles)
 
 @app.route('/help')

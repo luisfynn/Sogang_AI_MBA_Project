@@ -48,6 +48,10 @@ import requests
 USER_EMAIL = "luisfynn1@gmail.com"
 USER_ID ="itaehwan162444"
 USER_PASS = "@kj0224kj@"
+SEARCH_KEYWORD = "고령화"
+FROM_DATE = "2023/1/1"
+TO_DATE = "2023/12/31"
+RUNMODE = "" #crawling : "", parsing : "parsing"
 
 def search_and_extract_html(search_query, start, stop, string):
     FMon, FDay, FYear = start.split('/')
@@ -282,4 +286,4 @@ def search_and_extract_html(search_query, start, stop, string):
 
 if __name__ == '__main__':
     # search_and_extract_html('#챌린저스', "1/1/2024", "3/26/2024", "parsing")
-    search_and_extract_html('#챌린저스', "1/1/2022", "12/31/2022", "") #crawling
+    search_and_extract_html(SEARCH_KEYWORD, FROM_DATE, TO_DATE, RUNMODE) #crawling

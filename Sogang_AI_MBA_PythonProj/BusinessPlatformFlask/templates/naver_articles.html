@@ -23,10 +23,12 @@
 
     <div>
         <h3>Crawling Data</h3>
-        
-        
-
-
+        {% if context %}
+            {% for item in context %}
+                {{ item }}
+                <hr>
+            {% endfor %}
+        {% endif %}
     </div>
 </body>
 </html>
