@@ -50,7 +50,7 @@ import glob
 SEARCH_KEYWORD = "챌린저스"
 RUNMODE = "" #crawling : "", parsing : "parsing"
 CRAWLING_URL = "https://play.google.com/store/apps/"
-CRAWLING_COUNT = 1000
+CRAWLING_COUNT = 10000
 WAIT_TIME = 1
 WAIT_INFINITE = 1000000
 
