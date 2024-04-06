@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import Select
+import pyautogui
 import time
 import csv
 from bs4 import BeautifulSoup
@@ -49,42 +50,38 @@ import glob
 SEARCH_KEYWORD = "챌린저스"
 RUNMODE = "" #crawling : "", parsing : "parsing"
 CRAWLING_URL = "https://play.google.com/store/apps/"
-CRAWLING_COUNT = 100
+CRAWLING_COUNT = 1000
 WAIT_TIME = 1
 WAIT_INFINITE = 1000000
 
 def mouse_scrool_down(browser):
     # 셀레니움 스크롤 끝까지 내려도 계속 내리는 페이지라면
     prev_height = browser.execute_script("return document. body.scrollHeight")
-    scrolldown_count = 0
+    scroll_location = 0
 
     while True:
-        # 첫번째로 스크롤 내리기
-        browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
-        scrolldown_count += 1
+        # 스크롤 내리기
+        scroll_location += 1000
+        browser.execute_script("window.scrollTo(0, {})".format(scroll_location))
+
         # 시간대기
         time.sleep(WAIT_TIME)
 
         # 현재높이 저장
-        current_height = browser.execute_script("return document. body.scrollHeight")
+        current_height = browser.execute_script("return window.pageYOffset")
 
         # 현재높이와 끝의 높이가 끝이면 탈출
-        if current_height == prev_height:
+        if scroll_location > current_height + 2000:
             print("스크롤 다운 완료")
-            break
-        elif scrolldown_count >= 5:
-            print("스크롤 다운 횟수 초과")
             break
         else:
             print("")
-        # 업데이트해줘서 끝낼 수 있도록
-        prev_height == current_height
     return
 
-def file_mearge(browser, SEARCH_KEYWORD):
+def file_merge(string):
     # 검색할 디렉토리와 패턴 설정
     directory = '.'  # 현재 디렉토리
-    pattern = 'htmlCollect_*.txt'
+    pattern = 'googleHTML_*.txt'
 
     # 패턴에 일치하는 모든 파일을 찾음
     files = glob.glob(f'{directory}/{pattern}')
@@ -98,7 +95,7 @@ def file_mearge(browser, SEARCH_KEYWORD):
             combined_content += file.read() + '\n'  # 파일 내용을 결합하고, 파일 간 구분을 위해 줄바꿈 추가
 
     # 결합된 내용을 새 파일에 저장
-    combined_file_path = "htmlCollect_{0}.txt".format(SEARCH_KEYWORD)
+    combined_file_path = "googleHTML_{}.txt".format(SEARCH_KEYWORD)
     with open(combined_file_path, 'w', encoding='utf-8') as combined_file:
         combined_file.write(combined_content)
 
@@ -106,46 +103,32 @@ def file_mearge(browser, SEARCH_KEYWORD):
 
 
 def mouse_scrool_down_and_crawling(browser):
-    # 셀레니움 스크롤 끝까지 내려도 계속 내리는 페이지라면
-    prev_height = browser.execute_script("return document. body.scrollHeight")
-    scrolldown_count = 0
+    # 화면 해상도에 따라 중앙 위치 계산
+    # 화면 중앙으로 마우스 이동
+    # 마우스 클릭 실행
+    screenWidth, screenHeight = pyautogui.size()
+    centerX, centerY = screenWidth / 2, screenHeight / 2
+    pyautogui.moveTo(centerX, centerY)
+    pyautogui.click()
+    time.sleep(WAIT_TIME)
+
+    # 변수 및 리스트 생성
     html_code = list()
+    scrolldown_count = 0
 
     while True:
-        # crawling data 저장
-        html_code.append(browser.page_source)
+        # 아래로 스크롤
+        pyautogui.scroll(-500)
 
-        # 첫번째로 스크롤 내리기
-        browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
         scrolldown_count += 1
         print(scrolldown_count)
-        # 시간대기
-        # time.sleep(WAIT_TIME/2)
 
-        # 현재높이 저장
-        current_height = browser.execute_script("return document. body.scrollHeight")
-
-        # 현재높이와 끝의 높이가 끝이면 탈출
-        # if current_height == prev_height:
-        #     print("크롤링 스크롤 다운 완료")
-        #     break
         if scrolldown_count >= CRAWLING_COUNT:
-            print("크롤링 스크롤 다운 횟수 초과")
+            print("finish google app store crawling")
+            html_code.append(browser.page_source)
             break
         else:
-            if scrolldown_count !=0 and scrolldown_count / 5000 != 0 and scrolldown_count % 5000 == 0:
-                # 5000과 같거나 크면서 5000의 배수일 때 끊어서 저장
-                # 문자열 리스트를 하나의 문자열로 결합
-                html_code_combined = ''.join(html_code)
-
-                soup = BeautifulSoup(html_code_combined, 'html.parser')
-                # 저장할 파일 쓰기
-                with open("htmlCollect_{}_{}.txt".format(SEARCH_KEYWORD, scrolldown_count), "w", encoding='utf-8') as file:
-                    file.write(str(soup))
-                    print("Done! file has been saved.")
-                    html_code.clear()
-        # 업데이트해줘서 끝낼 수 있도록
-        prev_height == current_height
+            print("")
     return html_code, scrolldown_count
 
 def search_and_extract_html(search_query, string):
@@ -189,27 +172,18 @@ def search_and_extract_html(search_query, string):
 
         soup = BeautifulSoup(html_code_combined, 'html.parser')
         # 저장할 파일 쓰기
-        with open("htmlCollect_{}_{}.txt".format(SEARCH_KEYWORD, scrolldown), "w", encoding='utf-8') as file:
+        with open("googleHTML_{}_{}.txt".format(search_query, scrolldown), "w", encoding='utf-8') as file:
             file.write(str(soup))
             print("Done! final file has been saved.")
 
         # driver 종료
         driver.quit()
 
-        # 파일 모두 열어서 하나의 파일로 저장
-        file_mearge(driver, string)
-
-        # # 문자열 리스트를 하나의 문자열로 결합
-        # crawl_data_combined = ''.join(crawl_data)
-        #
-        # soup = BeautifulSoup(crawl_data_combined, 'html.parser')
-        # # 저장할 파일 쓰기
-        # with open("htmlCollect_{}.txt".format(SEARCH_KEYWORD), "w", encoding='utf-8') as file:
-        #     file.write(str(soup))
-        # print("Done! file has been saved.")
+    # 파일 모두 열어서 하나의 파일로 저장
+    file_merge(string)
 
     # 저장할 파일 열기
-    with open("htmlCollect_{0}.txt".format(SEARCH_KEYWORD), "r", encoding='utf-8') as file:
+    with open("googleHTML_{}.txt".format(SEARCH_KEYWORD), "r", encoding='utf-8') as file:
         html_content = file.read()
 
     soup = BeautifulSoup(html_content, "html.parser")
