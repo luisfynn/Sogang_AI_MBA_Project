@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Files</title>
+</head>
+<body>
+    <h1>Upload files</h1>
+    <!-- Update the action attribute to point to the correct route handling uploads -->
+    <form action="/uploadFiles" method="post" enctype="multipart/form-data">
+        <!-- Added a label for the file input for better accessibility -->
+        <label for="file">Choose an files</label>
+        <input type="file" id="file" name="file" accept="*">
+        <input type="submit" value="Upload">
+    </form>
+</body>
+</html>

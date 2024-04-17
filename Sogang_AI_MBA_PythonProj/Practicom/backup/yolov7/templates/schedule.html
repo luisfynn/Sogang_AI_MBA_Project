@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Schedule</title>
+</head>
+<body>
+    <h1>현재 진행 중인 챌린지</h1>
+    <table border="1">
+        <tr>
+            <th>행사명</th>
+            <th>내용</th>
+            <th>기간</th>
+            <th>비고</th>
+        </tr>
+        {% for item in data.important_dates %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.usage }}</td>
+                <td>{{ item.period }}</td>
+                <td><a href="{{ url_for('upload_file') }}">{{ item.remarks }}</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <h1>완료된 챌린지</h1>
+    <table border="1">
+        <tr>
+            <th>행사명</th>
+            <th>내용</th>
+            <th>기간</th>
+            <th>비고</th>
+        </tr>
+        {% for item in data.general_dates %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.usage }}</td>
+                <td>{{ item.period }}</td>
+                <td>{{ item.remarks }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <br><br><br>
+    <a href="{{ url_for('index') }}">Logout</a>
+</body>
+</html>

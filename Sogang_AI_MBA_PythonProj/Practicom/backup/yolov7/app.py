@@ -1,58 +1,36 @@
-# default library
 import os
-import pandas as pd
-import numpy as np
-import time
-from PIL import ImageFont, ImageDraw, Image
-import shutil
+import sys
 
-# flask library
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+import pandas as pd
+
 from flask import Flask, request, redirect, url_for, render_template
-
-# opencv & torch, tensorflow
+import numpy as np
+import math
 import cv2
+import time
 import torch
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-
-# pose estimation(library 상세 분석 할 것!!)
+import argparse
+import numpy as np
+from utils.torch_utils import select_device
 from models.experimental import attempt_load
+from PIL import ImageFont, ImageDraw, Image
+
+# 추가 검토 필요(하기 import 파일 상세 분석하기)
 from utils.datasets import letterbox
 from utils.plots import output_to_keypoint, plot_skeleton_kpts
-from utils.general import non_max_suppression_kpt
+from utils.general import non_max_suppression_kpt, strip_optimizer
 from torchvision import transforms
 from trainer import findAngle
-
-# face recognition
-# mmod_human_face_detector.dat<---학습 모델
-
-# dlib 설치 가이드 <---사용하지 않음(혹시 필요한 경우 설치)
-# pip install cmake
-# git clone https://github.com/davisking/dlib.git
-# cd dlib
-# python setup.py install
-
-# 학습된 모델 불러오기(참조코드)
-# pip install keras h5py
-# from keras.models import load_model
-# # Replace 'path_to_your_model' with the actual path to your HDF5 file
-# model_path = 'path_to_your_model/model1-aug-1000-batch-32.hdf5'
-# network = load_model(model_path)
-# # Print the model summary
-# network.summary()
-# # Check the type of the model
-# print(type(network))
-# 참조링크 : https://github.com/amineHorseman/facial-expression-recognition-using-cnn
-# 참조링크: https://github.com/petercunha/Emotion/blob/master/emotions.py#L4
-# 참조링크: https://github.com/BaekKyunShin/Computer-Vision-Basic/blob/main/Project3-Emotion_Classification/Emotion_Classification_in_Video.ipynb
-from keras.models import load_model
-from Emotionutils.inference import apply_offsets
-from Emotionutils.preprocessor import preprocess_input
+from trainer import findHeight
 
 # Flask app configuration
+# app = Flask(__name__, static_folder='uploads')
 app = Flask(__name__)
+
 app.secret_key = 'practicom'  # Secret key for session management
 
 # Configuration for user data and upload paths
@@ -145,7 +123,7 @@ def upload_file():
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     if request.method == 'POST':
-        file = request.files.get('video', None)
+        file = request.files.get('file', None)
         if file and file.filename == '':
             flash('No selected file')
             return redirect(request.url)
@@ -155,7 +133,6 @@ def upload_file():
             print(f"Attempting to save file to {save_path}")  # 파일 저장 경로 로깅
             file.save(save_path)
             print(f"File saved to {save_path}")  # 파일 저장 경로 로깅
-            yolo_pose_detection()
             return redirect(url_for('uploaded_files_list'))
     return render_template('upload.html')
 
@@ -165,7 +142,7 @@ def uploaded_files_list():
     files.sort(key=lambda x: os.path.getmtime(os.path.join(app.config['UPLOAD_FOLDER'], x)))
     # Generate the full URL for the files, including the filename
     files_urls = [url_for('uploaded_file', filename=file) for file in files]
-    print(f"uploaded_files_list:{files_urls}")
+    print(files_urls)
     return render_template('uploaded.html', files=files_urls)
 
 # Serve individual uploaded files
@@ -176,10 +153,9 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 # run yolo pose detection
-# @app.route('/upload-video', methods=['POST'])
+@app.route('/upload-video', methods=['POST'])
 def yolo_pose_detection():
     if 'video' not in request.files: # 요청에 'video'라는 이름의 파일이 포함되어 있는지 확인 후, 없으면 request.url로 리다이렉션
-        print("video not in request")
         return redirect(request.url)
     video = request.files['video']
     print(f"run pose_detection: {video.filename}")
@@ -188,7 +164,7 @@ def yolo_pose_detection():
     if video and allowed_file_mp4(video.filename):
         filename = secure_filename(video.filename)
         video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        # video.save(video_path)
+        video.save(video_path)
         # yolov9-c-converted.pt와 사용자 정의 함수를 호출
         process_video(video_path)
         return redirect(url_for('uploaded_files_list'))
@@ -199,7 +175,6 @@ def yolo_pose_detection():
 # 메모리 절약: 모델을 평가하거나 추론을 할 때는 그래디언트를 계산할 필요가 없습니다. 그래디언트를 저장하지 않음으로써 사용되는 메모리 양을 줄일 수 있습니다.
 # 계산 효율 증가: 그래디언트 계산이 필요 없을 때는 연산 속도가 빨라집니다. 이는 특히 모델을 평가하거나 실제 운영 환경에서 모델을 사용할 때 중요합니다.
 # 버그 방지: 모델 학습 단계가 아닌, 평가나 테스트 단계에서는 실수로라도 그래디언트가 업데이트 되는 것을 방지합니다.
-# emotion 감지 기능 추가
 @torch.no_grad()
 def run(poseweights, source, drawskeleton=True, **kwargs):
     # 각 인자에 대한 기본값 설정
@@ -214,11 +189,10 @@ def run(poseweights, source, drawskeleton=True, **kwargs):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    # 모션 인식 모델 로딩
+    # 모델 로딩 부분
     model = attempt_load(poseweights, map_location=device)
     _ = model.eval()
 
-    # 비디오 처리
     cap = cv2.VideoCapture(input_path)
     webcam = False
 
@@ -232,9 +206,6 @@ def run(poseweights, source, drawskeleton=True, **kwargs):
         fw, fh = 1280, 768
     vid_write_image = letterbox(cap.read()[1], (fw), stride=64, auto=True)[0]
     resize_height, resize_width = vid_write_image.shape[:2]
-    print(f"resize_height:{resize_height}")
-    # resize_height = 720
-
     out_video_name = "output" if path.isnumeric() else f"{input_path.split('/')[-1].split('.')[0]}"
     out = cv2.VideoWriter(f"{out_video_name}_kpt.mp4", cv2.VideoWriter_fourcc(*'mp4v'), 30, (resize_width, resize_height))
     if webcam:
@@ -256,12 +227,14 @@ def run(poseweights, source, drawskeleton=True, **kwargs):
         if not ret:
             break
 
-        # 모션 인식 이미지 처리
         orig_image = frame
+
+        # preprocess image
         image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
         if webcam:
             image = cv2.resize(image, (fw, fh), interpolation=cv2.INTER_LINEAR)
         image = letterbox(image, (fw),stride=64, auto=True)[0]
+        # image_ = image.copy()
         image = transforms.ToTensor()(image)
         image = torch.tensor(np.array([image.numpy()]))
 
@@ -276,7 +249,9 @@ def run(poseweights, source, drawskeleton=True, **kwargs):
         output = output_to_keypoint(output)
         img = image[0].permute(1, 2, 0) * 255
         img = img.cpu().numpy().astype(np.uint8)
+
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        # out.write(img)  # 이미지 데이터를  비디오 파일에 기록
 
         if curltracker == True:
             for idx in range(output.shape[0]):
@@ -399,161 +374,12 @@ def run(poseweights, source, drawskeleton=True, **kwargs):
         fps = 1 / (end_time - start_time)
         total_fps += fps
         frame_count += 1
-        out .write(img)  # 이미지 데이터를  비디오 파일에 기록
+        out.write(img)  # 이미지 데이터를  비디오 파일에 기록
 
     cap.release()
     out.release()
     avg_fps = total_fps / frame_count
     print(f"Average FPS: {avg_fps:.3f}")
-    emotion_process_video(f"{out_video_name}_kpt.mp4")
-
-
-def emotion_process_video(video_filename):
-    print(f"video_filename: {video_filename}")
-
-    # 업로드 폴더 경로 가져오기
-    upload_folder = app.config['UPLOAD_FOLDER']
-
-    # 업로드 폴더 확인 및 생성
-    if not os.path.exists(upload_folder):
-        os.makedirs(upload_folder)
-
-    # 원본 비디오 경로
-    # video_path = os.path.join(upload_folder, video_filename)
-
-    # 모델과 얼굴 감지기 로드
-    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-    model_path = "model1-aug-1000-batch-32.hdf5"
-    network = load_model(model_path)
-
-    # getting input model shapes for inference
-    emotion_target_size = network.input_shape[1:3]
-
-    # 모델 컴파일
-    network.compile(optimizer='adam',
-                  loss='categorical_crossentropy',  # 다중 클래스 분류 문제에 적합한 손실 함수
-                  metrics=['accuracy'])  # 평가 지표로 정확도 사용
-
-    # 색상 및 감정 리스트
-    green_color = (0, 255, 0)
-    red_color = (0, 0, 255)
-    emotions = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
-
-    # hyper-parameters for bounding boxes shape
-    frame_window = 10
-    emotion_offsets = (20, 40)
-
-    # starting lists for calculating modes
-    emotion_window = []
-
-    # 원본 비디오를 복사하여 처리할 파일 생성
-    video_filename_SPLIT = video_filename.split('\\')[1]
-    print(f"emotion_process_video_video_filename:{video_filename_SPLIT}")
-    temp_video_filename = f"temp_{video_filename_SPLIT}"
-    print(f"temp_video_filename:{temp_video_filename}")
-    temp_video_path = os.path.join(upload_folder, temp_video_filename)
-    print(f"temp_video_path:{temp_video_path}")
-    shutil.copy(video_filename, temp_video_path)
-
-    # 비디오 파일 열기
-    cap = cv2.VideoCapture(temp_video_path)
-    fw = int(cap.get(3))
-    fh = int(cap.get(4))
-    out_video_filename = f"{video_filename.split('.')[0]}_emotions.mp4"
-    out = cv2.VideoWriter(out_video_filename, cv2.VideoWriter_fourcc(*'mp4v'), 30, (fw, fh))
-
-    try:
-        # 비디오 프레임 처리
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-            faces = face_cascade.detectMultiScale(gray_image, scaleFactor=1.1, minNeighbors=5,
-                                                  minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
-            for face_coordinates in faces:
-                x1, x2, y1, y2 = apply_offsets(face_coordinates, emotion_offsets)
-                gray_face = gray_image[y1:y2, x1:x2]
-                try:
-                    gray_face = cv2.resize(gray_face, (emotion_target_size))
-                except:
-                    continue
-
-                gray_face = preprocess_input(gray_face, True)
-                gray_face = np.expand_dims(gray_face, 0)
-                gray_face = np.expand_dims(gray_face, -1)
-                emotion_prediction = network.predict(gray_face)
-                emotion_probability = np.max(emotion_prediction)
-                emotion_label_arg = np.argmax(emotion_prediction)
-                emotion_text = emotions[emotion_label_arg]
-                emotion_window.append(emotion_text)
-
-                print(f"emotion_text: {emotion_text}")
-
-                # 텍스트를 프레임에 추가
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                cv2.putText(frame, f'Emotion: {emotion_text}', (150, 150), font, 1, (255, 0, 0), 2, cv2.LINE_AA)
-
-                # if len(emotion_window) > frame_window:
-                #     emotion_window.pop(0)
-                # try:
-                #     emotion_mode = mode(emotion_window)
-                # except:
-                #     continue
-                #
-                # if emotion_text == 'angry':
-                #     color = emotion_probability * np.asarray((255, 0, 0))
-                # elif emotion_text == 'sad':
-                #     color = emotion_probability * np.asarray((0, 0, 255))
-                # elif emotion_text == 'happy':
-                #     color = emotion_probability * np.asarray((255, 255, 0))
-                # elif emotion_text == 'surprise':
-                #     color = emotion_probability * np.asarray((0, 255, 255))
-                # else:
-                #     color = emotion_probability * np.asarray((0, 255, 0))
-                #
-                # color = color.astype(int)
-                # color = color.tolist()
-                #
-                # draw_bounding_box(face_coordinates, rgb_image, color)
-                # draw_text(face_coordinates, rgb_image, emotion_mode,
-                #           color, 0, -45, 1, 1)
-            out.write(frame)
-
-            #----------------------------------------------------------------------------
-            #
-            # # 감정 인식
-            # face_detections = cnn_face_detector(frame, 1)
-            # if len(face_detections) > 0:
-            #     for face_detection in face_detections:
-            #         left, top, right, bottom, confidence = face_detection.rect.left(), face_detection.rect.top(), face_detection.rect.right(), face_detection.rect.bottom(), face_detection.confidence
-            #         cv2.rectangle(frame, (left, top), (right, bottom), green_color, 2)
-            #         roi = frame[top:bottom, left:right]
-            #         roi = cv2.resize(roi, (48, 48))  # Extract region of interest from image
-            #         roi = roi / 255  # Normalize
-            #         roi = np.expand_dims(roi, axis=0)
-            #         preds = network.predict(roi)
-            #
-            #         if preds is not None:
-            #             pred_emotion_index = np.argmax(preds)
-            #             print(f"emotion: {pred_emotion_index}")
-            #             cv2.putText(frame, emotions[pred_emotion_index], (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX,
-            #                         0.5, red_color, 1)
-
-    finally:
-        cap.release()
-        out.release()
-        print(f"Processed video saved as {out_video_filename}")
-
-        # 파일 이동
-        # shutil.move(out_video_filename, os.path.join(app.config['UPLOAD_FOLDER'], out_video_filename))
-        # print(f"Video moved to upload_folder")
-
-        # 임시 복사 파일 삭제
-        os.remove(temp_video_path)
 
 def process_video(video_path):
     # run 함수 호출

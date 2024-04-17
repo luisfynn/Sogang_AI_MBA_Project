@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Upload Files</title>
+    <title>Upload Video</title>
 </head>
 <body>
-    <h1>Upload files</h1>
+    <h1>Upload Video</h1>
+<!--    <form action="/upload-video" method="post" enctype="multipart/form-data">-->
+<!--    <input type="file" name="video" accept="video/mp4">-->
+<!--    <input type="submit" value="Upload Video">-->
+<!--    </form>-->
     <!-- Update the action attribute to point to the correct route handling uploads -->
     <form action="/uploadFiles" method="post" enctype="multipart/form-data">
         <!-- Added a label for the file input for better accessibility -->
-        <label for="file">Choose an files</label>
-        <input type="file" id="file" name="file" accept="*">
+        <label for="file">Choose a Video</label>
+        <input type="file" id="file" name="video" accept="*">
         <input type="submit" value="Upload">
     </form>
 </body>
