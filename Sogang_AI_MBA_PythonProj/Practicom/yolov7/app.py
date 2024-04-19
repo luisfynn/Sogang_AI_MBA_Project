@@ -1,9 +1,11 @@
 # default library
 import os
+import sys
 import pandas as pd
 import numpy as np
 import time
 from PIL import ImageFont, ImageDraw, Image
+import copy
 import shutil
 
 # flask library
@@ -16,19 +18,22 @@ from flask import Flask, request, redirect, url_for, render_template
 import cv2
 import torch
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+import tensorflow as tf
 
 # pose estimation(library 상세 분석 할 것!!)
 from models.experimental import attempt_load
+from utils.torch_utils import select_device
+from utils.torch_utils import select_device
 from utils.datasets import letterbox
 from utils.plots import output_to_keypoint, plot_skeleton_kpts
-from utils.general import non_max_suppression_kpt
+from utils.general import non_max_suppression_kpt, strip_optimizer
 from torchvision import transforms
 from trainer import findAngle
+from trainer import findHeight
 
 # face recognition
 # mmod_human_face_detector.dat<---학습 모델
-
-# dlib 설치 가이드 <---사용하지 않음(혹시 필요한 경우 설치)
+# dlib 설치 가이드
 # pip install cmake
 # git clone https://github.com/davisking/dlib.git
 # cd dlib
@@ -47,12 +52,23 @@ from trainer import findAngle
 # 참조링크 : https://github.com/amineHorseman/facial-expression-recognition-using-cnn
 # 참조링크: https://github.com/petercunha/Emotion/blob/master/emotions.py#L4
 # 참조링크: https://github.com/BaekKyunShin/Computer-Vision-Basic/blob/main/Project3-Emotion_Classification/Emotion_Classification_in_Video.ipynb
+import dlib
 from keras.models import load_model
+import cv2
+import numpy as np
+from statistics import mode
+from keras.models import load_model
+from Emotionutils.datasets import get_labels
+from Emotionutils.inference import detect_faces
+from Emotionutils.inference import draw_text
+from Emotionutils.inference import draw_bounding_box
 from Emotionutils.inference import apply_offsets
+from Emotionutils.inference import load_detection_model
 from Emotionutils.preprocessor import preprocess_input
 
 # Flask app configuration
 app = Flask(__name__)
+
 app.secret_key = 'practicom'  # Secret key for session management
 
 # Configuration for user data and upload paths
@@ -236,7 +252,7 @@ def run(poseweights, source, drawskeleton=True, **kwargs):
     # resize_height = 720
 
     out_video_name = "output" if path.isnumeric() else f"{input_path.split('/')[-1].split('.')[0]}"
-    out = cv2.VideoWriter(f"{out_video_name}_kpt.mp4", cv2.VideoWriter_fourcc(*'mp4v'), 30, (resize_width, resize_height))
+    out = cv2.VideoWriter(f"{out_video_name}_kpt.mp4", cv2.VideoWriter_fourcc(*'H264'), 29.97, (resize_width, resize_height))
     if webcam:
         out = cv2.VideoWriter(f"{out_video_name}_kpt.mp4", cv2.VideoWriter_fourcc(*'mp4v'), 30, (fw, fh))
 
@@ -418,12 +434,9 @@ def emotion_process_video(video_filename):
     if not os.path.exists(upload_folder):
         os.makedirs(upload_folder)
 
-    # 원본 비디오 경로
-    # video_path = os.path.join(upload_folder, video_filename)
-
     # 모델과 얼굴 감지기 로드
     face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-    model_path = "model1-aug-1000-batch-32.hdf5"
+    model_path = 'model1-aug-1000-batch-32.hdf5'
     network = load_model(model_path)
 
     # getting input model shapes for inference
@@ -433,6 +446,7 @@ def emotion_process_video(video_filename):
     network.compile(optimizer='adam',
                   loss='categorical_crossentropy',  # 다중 클래스 분류 문제에 적합한 손실 함수
                   metrics=['accuracy'])  # 평가 지표로 정확도 사용
+    cnn_face_detector = dlib.cnn_face_detection_model_v1('mmod_human_face_detector.dat')
 
     # 색상 및 감정 리스트
     green_color = (0, 255, 0)
@@ -460,7 +474,7 @@ def emotion_process_video(video_filename):
     fw = int(cap.get(3))
     fh = int(cap.get(4))
     out_video_filename = f"{video_filename.split('.')[0]}_emotions.mp4"
-    out = cv2.VideoWriter(out_video_filename, cv2.VideoWriter_fourcc(*'mp4v'), 30, (fw, fh))
+    out = cv2.VideoWriter(out_video_filename, cv2.VideoWriter_fourcc(*'H264'), 29.97, (fw, fh))
 
     try:
         # 비디오 프레임 처리
@@ -496,53 +510,7 @@ def emotion_process_video(video_filename):
                 # 텍스트를 프레임에 추가
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 cv2.putText(frame, f'Emotion: {emotion_text}', (150, 150), font, 1, (255, 0, 0), 2, cv2.LINE_AA)
-
-                # if len(emotion_window) > frame_window:
-                #     emotion_window.pop(0)
-                # try:
-                #     emotion_mode = mode(emotion_window)
-                # except:
-                #     continue
-                #
-                # if emotion_text == 'angry':
-                #     color = emotion_probability * np.asarray((255, 0, 0))
-                # elif emotion_text == 'sad':
-                #     color = emotion_probability * np.asarray((0, 0, 255))
-                # elif emotion_text == 'happy':
-                #     color = emotion_probability * np.asarray((255, 255, 0))
-                # elif emotion_text == 'surprise':
-                #     color = emotion_probability * np.asarray((0, 255, 255))
-                # else:
-                #     color = emotion_probability * np.asarray((0, 255, 0))
-                #
-                # color = color.astype(int)
-                # color = color.tolist()
-                #
-                # draw_bounding_box(face_coordinates, rgb_image, color)
-                # draw_text(face_coordinates, rgb_image, emotion_mode,
-                #           color, 0, -45, 1, 1)
             out.write(frame)
-
-            #----------------------------------------------------------------------------
-            #
-            # # 감정 인식
-            # face_detections = cnn_face_detector(frame, 1)
-            # if len(face_detections) > 0:
-            #     for face_detection in face_detections:
-            #         left, top, right, bottom, confidence = face_detection.rect.left(), face_detection.rect.top(), face_detection.rect.right(), face_detection.rect.bottom(), face_detection.confidence
-            #         cv2.rectangle(frame, (left, top), (right, bottom), green_color, 2)
-            #         roi = frame[top:bottom, left:right]
-            #         roi = cv2.resize(roi, (48, 48))  # Extract region of interest from image
-            #         roi = roi / 255  # Normalize
-            #         roi = np.expand_dims(roi, axis=0)
-            #         preds = network.predict(roi)
-            #
-            #         if preds is not None:
-            #             pred_emotion_index = np.argmax(preds)
-            #             print(f"emotion: {pred_emotion_index}")
-            #             cv2.putText(frame, emotions[pred_emotion_index], (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX,
-            #                         0.5, red_color, 1)
-
     finally:
         cap.release()
         out.release()
@@ -554,6 +522,50 @@ def emotion_process_video(video_filename):
 
         # 임시 복사 파일 삭제
         os.remove(temp_video_path)
+
+        # blur 처리 추가
+        blur_faces(out_video_filename)
+
+
+def blur_faces(in_video_filename):
+    print("run blur")
+    # 캐스케이드 분류기 로드
+    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
+    # 비디오 파일 읽기
+    cap = cv2.VideoCapture(in_video_filename)
+    if not cap.isOpened():
+        print(f"Error opening video file {in_video_filename}")
+        return
+
+    # 출력 비디오 설정
+    fourcc = cv2.VideoWriter_fourcc(*'H264')
+    out = cv2.VideoWriter(f"{in_video_filename.split('.')[0]}_blurred.mp4", fourcc, cap.get(cv2.CAP_PROP_FPS),
+                          (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # 흑백 이미지로 변환
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # 얼굴 감지
+        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+
+        # 감지된 얼굴 블러 처리
+        for (x, y, w, h) in faces:
+            roi = frame[y:y + h, x:x + w]
+            roi = cv2.GaussianBlur(roi, (23, 23), 30)
+            frame[y:y + h, x:x + w] = roi
+
+        # 변형된 프레임을 출력 비디오에 쓰기
+        out.write(frame)
+
+    # 자원 해제
+    cap.release()
+    out.release()
 
 def process_video(video_path):
     # run 함수 호출
