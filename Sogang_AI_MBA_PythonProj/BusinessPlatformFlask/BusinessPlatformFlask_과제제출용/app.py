@@ -16,7 +16,11 @@ def index():
 @app.route('/naver')
 def naver():
     article_titles = list()
-    with webdriver.Chrome() as driver:
+    opts = webdriver.ChromeOptions()
+    opts.add_argument("headless")
+    # opts.add_argument("window-size=1920x1080")
+
+    with webdriver.Chrome(options = opts) as driver:
         wait = WebDriverWait(driver, 15)
         url = "https://news.naver.com/section/100"
         driver.get(url)
@@ -26,8 +30,8 @@ def naver():
         #reservation
         #원하는 페이지 작성할 것
         try:
-            xpath_info = "/html/body/div/div[2]/div[2]/div[2]/div[1]/div[2]/a"  # full xpath
-            wait.until(EC.visibility_of_element_located((By.XPATH, xpath_info))).send_keys(Keys.ENTER)
+            # xpath_info = "/html/body/div/div[2]/div[2]/div[2]/div[1]/div[2]/a"  # full xpath
+            # wait.until(EC.visibility_of_element_located((By.XPATH, xpath_info))).send_keys(Keys.ENTER)
 
             xpath_info = "/html/body/div/div[2]/div[2]/div[2]/div[1]/div[1]/ul"  # full xpath
             element = WebDriverWait(driver, 10).until(

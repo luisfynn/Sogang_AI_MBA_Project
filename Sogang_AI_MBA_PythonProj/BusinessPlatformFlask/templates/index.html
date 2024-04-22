@@ -1,28 +1,320 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <title>Index</title>
-    <style>
-        div {
-            width: 400px;
-            border: 1px solid green;
-            padding: 10px;
-            margin-bottom: 5px;
-        }
-    </style>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dashboard</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.11/c3.min.css"/>
 </head>
-<body>
-    <div>
-         <nav>
-             <a href = "/help">[help]</a>
-             <a href = "/naver">[Naver]</a>
-             <a href = "/login">[login]</a>
-        </nav>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <h1 class="h3 mb-0 text-gray-800" style="font-weight: bold;">MK Dashboard</h1>
+                </nav>
+                <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                <div class="container-fluid"  style="padding-left: 100px; padding-right: 100px">
+
+                    <!-- Page Heading -->
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <h1 class="h3 mb-0 text-gray-800" style="font-weight: bold;">금융</h1>
+                    </div>
+                    
+                    <!-- Content Row -->
+                    <div class="row">
+
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-s font-weight-bold text-primary text-uppercase mb-1">{{ company1_stock.title }}</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">₩ {{ company1_stock.today_price.price }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-won-sign fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-s font-weight-bold text-warning text-uppercase mb-1">{{ company2_stock.title }}</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">₩ {{ company2_stock.today_price.price }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-won-sign fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-danger shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-s font-weight-bold text-danger text-uppercase mb-1">{{ us_stock_price.title }}</div>
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col-auto">
+                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">$ {{ us_stock_price.today_price }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pending Requests Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-secondary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-s font-weight-bold text-secondary text-uppercase mb-1">Bitcoin</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">₩ {{ bitcoin_price }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fab fa-bitcoin fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <!-- Page Heading -->
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4 mt-5">
+                        <h1 class="h3 mb-0 text-gray-800" style="font-weight: bold;">생활</h1>
+                    </div>
+                    
+                    
+                    <!-- Content Row -->
+                    <div class="row">
+
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-s font-weight-bold text-info  text-uppercase mb-1">오늘 날씨</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ weather_info.weather }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-cloud-sun fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-s font-weight-bold text-success text-uppercase mb-1">현재 온도</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ weather_info.temp }} ℃</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-temperature-high fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-s font-weight-bold text-warning text-uppercase mb-1">미세먼지</div>
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col-auto">
+                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ weather_info.dust }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-smog fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pending Requests Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-danger shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-s font-weight-bold text-danger text-uppercase mb-1">초미세먼지</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ weather_info.ultra_dust }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-head-side-mask fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xl-12 col-lg-12">
+                            <div class="card shadow mb-4">
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center">
+                                    <h6 class="m-0 font-weight-bold text-primary">차트 연습</h6>
+                                    <button type="button" class="btn btn-primary ml-3" id="line-chart-button">라인 차트</button>
+                                    <button type="button" class="btn btn-success ml-3" id="pie-chart-button">파이 차트</button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-area" id="chart-exercise">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Row -->
+
+                    <div class="row">
+                        <!-- Area Chart -->
+                        <div class="col-xl-12 col-lg-12">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">주간 날씨</h6>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <div class="chart-area">
+                                        <canvas id="myAreaChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4 mt-5">
+                        <h1 class="h3 mb-0 text-gray-800" style="font-weight: bold;">뉴스</h1>
+                    </div>
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <h5>키워드: {{company1_stock.title}}, {{company2_stock.title}}</h5>
+                    </div>
+                    
+                    <!-- Content Row -->
+                    <div class="row">
+                        {% for company1_news in company1_news_list %}
+                        <div class="card shadow mb-4 ml-3">
+                            <div class="card-header py-3">
+                                <a href="{{ company1_news.url }}"><h6 class="m-0 font-weight-bold text-primary">{{ company1_news.title }}</h6></a>
+                            </div>
+                            <div class="card-body">
+                                <p>{{ company1_news.description }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% for company2_news in company2_news_list %}
+                        <div class="card shadow mb-4 ml-3">
+                            <div class="card-header py-3">
+                                <a href="{{ company2_news.url }}"><h6 class="m-0 font-weight-bold text-primary">{{ company2_news.title }}</h6></a>
+                            </div>
+                            <div class="card-body">
+                                <p>{{ company2_news.description }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; Minkyu Han 2024</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
 
     </div>
+    <!-- End of Page Wrapper -->
 
-    <div>
-        <h3>Index page</h3>
-    </div>
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <script src="js/sb-admin-2.min.js"></script>
+
+    <script src="vendor/chart.js/Chart.min.js"></script>
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.11/c3.min.js"></script>
+
+    <script src="js/demo/chart-area-demo.js"></script>
+    <script src="js/demo/chart-exercise.js"></script>
 </body>
+
 </html>

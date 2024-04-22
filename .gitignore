@@ -3,6 +3,9 @@ googleAppCrawling_챌린저스.*
 googleHTML_챌린저스.*
 googleHTML_챌린저스_10000.*
 
+# zip, 7z
+*.zip
+
 # yolo
 *.pt
 
