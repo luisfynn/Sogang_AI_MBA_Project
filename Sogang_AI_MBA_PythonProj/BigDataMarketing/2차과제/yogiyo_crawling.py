@@ -9,9 +9,7 @@ import pandas as pd
 import csv
 import os
 
-# 송파구 오륜동은 오류 발생(주소가 검색안됨-삭제할 것)
-CITY_KEYWORD = ['중랑구 면목2동', '중랑구 면목4동', '중랑구 면목5동', '중랑구 면목7동', '중랑구 상봉1동', '중랑구 상봉2동', '중랑구 중화1동', '중랑구 중화2동', '중랑구 묵1동', '중랑구 묵2동', '중랑구 망우3동', '중랑구 신내1동', '중랑구 신내2동', '중랑구 면목본동', '중랑구 면목3.8동', '중랑구 망우본동']
-
+# CITY_KEYWORD =   ['성북구 돈암1동', '성북구 돈암2동', '성북구 안암동', '성북구 보문동', '성북구 정릉1동', '성북구 정릉2동', '성북구 정릉3동', '성북구 정릉4동', '성북구 길음1동', '성북구 길음2동', '성북구 월곡1동', '성북구 월곡2동', '성북구 장위1동', '성북구 장위2동', '성북구 장위3동', '성북구 성북동', '성북구 삼선동', '성북구 동선동', '성북구 종암동', '성북구 석관동']
 # 강남구: ['강남구 신사동', '강남구 개포3동', '강남구 논현1동', '강남구 논현2동', '강남구 삼성1동', '강남구 삼성2동', '강남구 대치1동', '강남구 대치2동', '강남구 대치4동', '강남구 역삼1동', '강남구 역삼2동', '강남구 도곡1동', '강남구 도곡2동', '강남구 개포1동', '강남구 개포2동', '강남구 개포4동', '강남구 일원본동', '강남구 일원1동', '강남구 수서동', '강남구 세곡동', '강남구 압구정동', '강남구 청담동']
 # 강동구: ['강동구 명일1동', '강동구 명일2동', '강동구 고덕1동', '강동구 고덕2동', '강동구 암사1동', '강동구 암사2동', '강동구 암사3동', '강동구 천호1동', '강동구 천호2동', '강동구 천호3동', '강동구 성내1동', '강동구 성내2동', '강동구 성내3동', '강동구 길동', '강동구 둔촌1동', '강동구 둔촌2동', '강동구 강일동', '강동구 상일1동', '강동구 상일2동']
 # 강북구: ['강북구 번1동', '강북구 번2동', '강북구 번3동', '강북구 수유1동', '강북구 수유2동', '강북구 수유3동', '강북구 삼양동', '강북구 미아동', '강북구 송중동', '강북구 송천동', '강북구 삼각산동', '강북구 우이동', '강북구 인수동']
@@ -29,7 +27,7 @@ CITY_KEYWORD = ['중랑구 면목2동', '중랑구 면목4동', '중랑구 면�
 # 서초구: ['서초구 서초1동', '서초구 서초2동', '서초구 서초3동', '서초구 서초4동', '서초구 잠원동', '서초구 반포본동', '서초구 반포1동', '서초구 반포2동', '서초구 반포3동', '서초구 반포4동', '서초구 방배본동', '서초구 방배1동', '서초구 방배2동', '서초구 방배3동', '서초구 방배4동', '서초구 양재1동', '서초구 양재2동', '서초구 내곡동']
 # 성동구: ['성동구 왕십리2동', '성동구 마장동', '성동구 사근동', '성동구 행당1동', '성동구 행당2동', '성동구 응봉동', '성동구 금호1가동', '성동구 금호4가동', '성동구 성수1가1동', '성동구 성수1가2동', '성동구 성수2가1동', '성동구 성수2가3동', '성동구 송정동', '성동구 용답동', '성동구 왕십리도선동', '성동구 금호2.3가동', '성동구 옥수동']
 # 성북구: ['성북구 돈암1동', '성북구 돈암2동', '성북구 안암동', '성북구 보문동', '성북구 정릉1동', '성북구 정릉2동', '성북구 정릉3동', '성북구 정릉4동', '성북구 길음1동', '성북구 길음2동', '성북구 월곡1동', '성북구 월곡2동', '성북구 장위1동', '성북구 장위2동', '성북구 장위3동', '성북구 성북동', '성북구 삼선동', '성북구 동선동', '성북구 종암동', '성북구 석관동']
-# 송파구: ['송파구 풍납1동', '송파구 풍납2동', '송파구 거여1동', '송파구 거여2동', '송파구 마천1동', '송파구 마천2동', '송파구 방이1동', '송파구 방이2동', '송파구 오금동', '송파구 송파1동', '송파구 송파2동', '송파구 석촌동', '송파구 삼전동', '송파구 가락본동', '송파구 가락1동', '송파구 가락2동', '송파구 문정1동', '송파구 문정2동', '송파구 장지동', '송파구 위례동', '송파구 잠실본동', '송파구 잠실2동', '송파구 잠실3동', '송파구 잠실4동', '송파구 잠실6동', '송파구 잠실7동']
+# 송파구: ['송파구 풍납1동', '송파구 풍납2동', '송파구 거여1동', '송파구 거여2동', '송파구 마천1동', '송파구 마천2동', '송파구 방이1동', '송파구 방이2동', '송파구 오륜동', '송파구 오금동', '송파구 송파1동', '송파구 송파2동', '송파구 석촌동', '송파구 삼전동', '송파구 가락본동', '송파구 가락1동', '송파구 가락2동', '송파구 문정1동', '송파구 문정2동', '송파구 장지동', '송파구 위례동', '송파구 잠실본동', '송파구 잠실2동', '송파구 잠실3동', '송파구 잠실4동', '송파구 잠실6동', '송파구 잠실7동']
 # 양천구: ['양천구 목1동', '양천구 목2동', '양천구 목3동', '양천구 목4동', '양천구 목5동', '양천구 신월1동', '양천구 신월2동', '양천구 신월3동', '양천구 신월4동', '양천구 신월5동', '양천구 신월6동', '양천구 신월7동', '양천구 신정1동', '양천구 신정2동', '양천구 신정4동', '양천구 신정3동', '양천구 신정6동', '양천구 신정7동']
 # 영등포구: ['영등포구 여의동', '영등포구 당산1동', '영등포구 당산2동', '영등포구 양평1동', '영등포구 양평2동', '영등포구 신길1동', '영등포구 신길3동', '영등포구 신길4동', '영등포구 신길5동', '영등포구 신길6동', '영등포구 신길7동', '영등포구 대림1동', '영등포구 대림2동', '영등포구 대림3동', '영등포구 영등포본동', '영등포구 영등포동', '영등포구 도림동', '영등포구 문래동']
 # 용산구: ['용산구 후암동', '용산구 용산2가동', '용산구 남영동', '용산구 원효로2동', '용산구 효창동', '용산구 용문동', '용산구 이촌1동', '용산구 이촌2동', '용산구 이태원1동', '용산구 이태원2동', '용산구 서빙고동', '용산구 보광동', '용산구 청파동', '용산구 원효로1동', '용산구 한강로동', '용산구 한남동']
@@ -38,13 +36,11 @@ CITY_KEYWORD = ['중랑구 면목2동', '중랑구 면목4동', '중랑구 면�
 # 중구: ['중구 소공동', '중구 회현동', '중구 명동', '중구 필동', '중구 장충동', '중구 광희동', '중구 을지로동', '중구 신당5동', '중구 황학동', '중구 중림동', '중구 신당동', '중구 다산동', '중구 약수동', '중구 청구동', '중구 동화동']
 # 중랑구: ['중랑구 면목2동', '중랑구 면목4동', '중랑구 면목5동', '중랑구 면목7동', '중랑구 상봉1동', '중랑구 상봉2동', '중랑구 중화1동', '중랑구 중화2동', '중랑구 묵1동', '중랑구 묵2동', '중랑구 망우3동', '중랑구 신내1동', '중랑구 신내2동', '중랑구 면목본동', '중랑구 면목3.8동', '중랑구 망우본동']
 
-
-
-BRAND_KEYWORD = '60계' #굽네치킨, BHC, 60계치킨
+BRAND_KEYWORD = '굽네' #굽네, BHC, 60계
 METHOD = 'crawling_parse' #'crawling_parse' or 'parse'
 
-PATH = "C:\\Users\\luisf\\OneDrive\\바탕 화면\\WorkSpace\\Sogang_AI_MBA_Project\\Sogang_AI_MBA_PythonProj\\BigDataMarketing\\2차과제\\"
-# PATH ="C:\\Users\\medit\\Desktop\\WorkSpace\\pythonProject\\BigDataMarketing\\"
+# PATH = "C:\\Users\\luisf\\OneDrive\\바탕 화면\\WorkSpace\\Sogang_AI_MBA_Project\\Sogang_AI_MBA_PythonProj\\BigDataMarketing\\2차과제\\"
+PATH ="C:\\Users\\medit\\Desktop\\WorkSpace\\pythonProject\\BigDataMarketing\\"
 TIME_DELAY = 1
 
 def initialize_driver():
@@ -215,7 +211,7 @@ def goto_store(driver, num, store_name):
 
         # 리뷰를 긁어서 html로 저장, 분석 함수는 별도로 구현
         get_reviews(store_name)
-
+        
     except Exception as e:
         print(f'Error navigating to store {num + 1}: {e}')
         store_name = None
@@ -256,8 +252,7 @@ def process_data(region, driver):
             time.sleep(TIME_DELAY)
 
             print("go to store")
-            goto_store(driver,
-                       num, store_text)
+            goto_store(driver, num, store_text)
             time.sleep(TIME_DELAY)
         else:
             # 페이지 뒤로 가기
@@ -366,47 +361,64 @@ def only_parse_html_files(folder_path):
             time.sleep(TIME_DELAY)
             save_data_to_csv(html_file, dates, order_items, reviews, taste_star, quantity_star, delivery_score)
 
-def make_dictionary():
+
+def make_donglist():
     try:
-        # Load the CSV file
-        data = pd.read_csv("추가분석자료/행정구역(동별)_20240422135054.csv", skiprows=2)
+        # Load the CSV file and skip the first two header rows
+        data = pd.read_csv("C:\\Users\\medit\\Desktop\\WorkSpace\\pythonProject\\BigDataMarketing\\분석에 활용한 데이터\\행정구역(동별)_20240422135054.csv", skiprows=2)
 
-        # Drop unnecessary columns and reset index
-        data.drop(['동별(1)'], axis=1, inplace=True)
-        data.columns = ['District', 'Neighborhood']
+        # Drop unnecessary columns
+        data = data.drop(['동별(1)'], axis=1)
+        print(data.head(5))
 
-        # Group by 'District' and collect 'Neighborhood' into lists
-        grouped_data = data.groupby('District')['Neighborhood'].apply(list).to_dict()
+        # Group by '동별(2)' and transform '동별(3)' into lists within a dictionary
+        grouped_data = data.groupby('동별(2)')['동별(3)'].apply(list).to_dict()
 
-        # Modify neighborhood names to prevent duplicates across districts
+        # Create a new list with modified neighborhood names to prevent duplication
+        new_list = []
         for district, neighborhoods in grouped_data.items():
-            grouped_data[district] = [f"{district} {neighborhood}" for neighborhood in neighborhoods]
+            modified_neighborhoods = [f"{district} {neighborhood}" for neighborhood in neighborhoods]
+            new_list.append(modified_neighborhoods)
 
-        return grouped_data
+        # Remove a specific item from the list if present
+        if "송파구 오륜동" in new_list:
+            new_list.remove("송파구 오륜동")
+
+        update_list = []
+
+        for index in new_list:
+            for number in index:
+                update_list.append(number)
+
+        return update_list
+
     except Exception as e:
         print(f"An error occurred: {e}")
-        return {}
+        return []
+
 
 
 if __name__ == '__main__':
-    # # 서울 행정구, 행정동 데이터로 딕셔너리 생성
-    # sample_dictionary = make_dictionary()
-    #
-    # # if METHOD == 'crawling_parse':
-    # #     with initialize_driver() as driver:
-    # #         for district, neighborhoods in sample_dictionary.items():
-    # #             # print(f"{district}: {neighborhoods}")
-    # #             for gu in district:
-    # #                 for dong in neighborhoods:
-    # #                     print(f"run {gu}_{dong} crawling")
-    # #                     process_data(gu, dong, driver)
+    # 서울 행정구, 행정동 데이터로 딕셔너리 생성
+    dong_list = make_donglist()
+    print(type(dong_list))
+    print(f"dong_list: {dong_list}")
+    print(f"dong_list length: {len(dong_list)}")
+    # if METHOD == 'crawling_parse':
+    #     with initialize_driver() as driver:
+    #         for district, neighborhoods in sample_dictionary.items():
+    #             # print(f"{district}: {neighborhoods}")
+    #             for gu in district:
+    #                 for dong in neighborhoods:
+    #                     print(f"run {gu}_{dong} crawling")
+    #                     process_data(gu, dong, driver)
 
     if METHOD == 'crawling_parse':
         with initialize_driver() as driver:
-            for city in CITY_KEYWORD:
+            for city in dong_list:
                 print(f"run {city} crawling")
                 region = city
                 process_data(region, driver)
-    # else:
-    print("start parsing")
-    only_parse_html_files(PATH)
+    else:
+        print("start parsing")
+        only_parse_html_files(PATH)
