@@ -15,7 +15,7 @@ app = Flask(__name__,
 @app.route('/')
 def dashboard():
     news_list = get_news_list("부동산")
-    return render_template('index.html',company1_news_list=news_list)
+    return render_template('indexProj.html',company1_news_list=news_list)
 
 ########################################################################################################################
 serviceKey = "r366v2G%2BVbUTB2DXIusTs%2BI5xgtb3Kfhsa2jvFf74TIGkhmUwrKzNI5SZL04S%2BnMdfEQFLbNoXl7r2tKyP0VWQ%3D%3D"
@@ -149,4 +149,4 @@ def time_series1():
 ########################################################################################################################
 
 if __name__ == '__main__':
-    app.run()
+    app.run('0.0.0.0', port = 5001)
