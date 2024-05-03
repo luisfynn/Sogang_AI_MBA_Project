@@ -1,0 +1,324 @@
+---
+title: "Realestate_Noone"
+output:
+  html_document: default
+  word_document: default
+date: "2023-06-11"
+---
+
+## 데이터 로드 및 변환
+```{r}
+library(dplyr)
+# finalretaildata 불러오기
+
+#setwd("C:\\Rtest\\realestate")
+data_whole <- read.csv("RealEstateData/FinalRetailData_1차 수정.csv", h = T, fileEncoding = "cp949")
+data_whole <- subset(data_whole, Rejion == "노원구")  # 다른 구 분석하려면 이 부분 변경경
+summary(data_whole)
+```
+```{r}
+str(data_whole)
+```
+```{r}
+data_whole %>% colnames()
+```
+```{r}
+# # Was:
+# data %>% select(filterCol)
+# 
+# # Now:
+# data %>% select(all_of(filterCol))
+filterCol<-c("index", "transaction_id", "apartment_id", "city", "jibun", "apt", "addr_kr", "Latitude", "Hardness", "year", "Rejion")
+data_whole<-data_whole %>% select(-all_of(filterCol))
+str(data_whole)
+```
+
+```{r}
+# 면적당 가격 변수 추가 및 real_price 변수 제거
+data_whole$transaction_real_price <- as.numeric(data_whole$transaction_real_price)
+data_whole$unit_price <- data_whole$transaction_real_price / data_whole$exclusive_use_area
+data_whole$transaction_real_price <- NULL
+str(data_whole)
+```
+```{r}
+# transaction_month 변수 추가 및 transaction_year_month, transaction_date, apt 변수 제거
+data_whole$transaction_month <- substr(data_whole$transaction_year_month, 6, 7)
+data_whole$transaction_year_month <- NULL
+data_whole$transaction_date <- NULL
+data_whole$apt <- NULL
+str(data_whole)
+
+View(data_whole)
+median(data_whole$unit_price)
+mean(data_whole$unit_price)
+hist(data_whole$unit_price)
+skewness(data_whole$unit_price)
+```
+
+```{r}
+# factor 형으로 변환
+data_whole$year <- as.factor(data_whole$year)
+data_whole$dong <- as.factor(data_whole$dong)
+data_whole$transaction_month <- as.factor(data_whole$transaction_month) # 거래월에 따른 가격 변화 확인
+
+# 변환 결과 확인
+str(data_whole)
+```
+
+## 컬럼 값 Exploration 및 데이터 변환
+```{r}
+library(ggplot2)
+
+# year of completion -- 준공년도
+summary(data_whole$year_of_completion)
+
+data_whole$year_of_completion_f <- cut(data_whole$year_of_completion, breaks = c(0, 1997, 2001, 2007, Inf), labels = c("1st", "2nd", "3rd", "4th"))
+data_whole$year_of_completion <- NULL
+summary(data_whole$year_of_completion_f)
+```
+```{r}
+# 전체 가격 분포
+data_whole %>% summarize(count = n(), avg_price = mean(unit_price), std_price = sd(unit_price))
+```
+```{r}
+# 준공년도 factor별 가격 분포
+data_whole %>% group_by(year_of_completion_f) %>% 
+  summarize(count = n(), avg_price = mean(unit_price), std_price = sd(unit_price))
+
+ggplot(data = data_whole, aes(x = factor(year_of_completion_f), y = unit_price)) + geom_boxplot()
+```
+```{r}
+# 동별 가격 분포
+summary(data_whole$dong)
+data_whole %>% group_by(dong) %>% 
+  summarize(count = n(), avg_price = mean(unit_price), std_price = sd(unit_price)) # dong별 평균 및 표준편차
+
+View(data_whole %>% group_by(dong) %>% 
+  summarize(count = n(), avg_price = mean(unit_price), std_price = sd(unit_price))) # dong별 평균 및 표준편차
+```
+
+```{r}
+# unit price 
+summary(data_whole$unit_price)
+```
+```{r, out.width='1200', out.height='800'}
+ggplot(data = data_whole, aes(x = factor(dong), y = unit_price)) + geom_boxplot() + coord_flip() +ggtitle("동별 가격 boxplot")
+```
+
+## 노원구 단위당 가격 분석
+## 트레이닝 데이터와 테스트 데이터로 split
+
+```{r}
+# Data transformation for Tree & Regression Model 
+data_whole1 <- data_whole
+
+install.packages('caTools', repos ="http://cran.us.r-project.org")
+library(caTools)
+
+set.seed(123)
+sample = sample.split(data_whole1$unit_price, SplitRatio = .7)
+data_train1 = subset(data_whole1, sample == TRUE)
+data_test1  = subset(data_whole1, sample == FALSE)
+
+str(data_train1); mean(data_train1$unit_price)
+```
+
+
+```{r}
+str(data_test1);mean(data_test1$unit_price)
+```
+
+## Decision Tree
+
+```{r}
+install.packages("rpart", repos ="http://cran.us.r-project.org")
+library(rpart)
+tree1 <- rpart(unit_price~.-year,  
+               data=data_train1, 
+               method = "anova",
+               control = rpart.control(minsplit = 50, maxdepth = 5))
+
+# tree 결과
+print(tree1)
+summary(tree1)
+install.packages("rpart.plot", repos = "http://cran.us.r-project.org")
+library(rpart.plot)
+
+rpart.plot(tree1, cex = 0.7)
+```
+
+## Decision Tree parameter tuning
+
+```{r}
+printcp(tree1)
+plotcp(tree1)
+tree1 <- prune(tree1, cp= tree1$cptable[which.min(tree1$cptable[, "xerror"]), "CP"]) 
+
+rpart.plot(tree1, cex = 0.7)
+```
+
+## Decision Tree prediction & RMSE calculation
+
+```{r}
+# test data 에 적용
+
+predict_1 <- predict(tree1, data_test1)
+summary(predict_1)
+
+# actual, predicted cbind
+
+databind1 <- cbind(data_test1[,25],predict_1)
+databind1 <- as.data.frame(databind1)
+summary(databind1)
+
+# RMSE 계산
+install.packages("Metrics", repos = "http://cran.us.r-project.org")
+library(Metrics)
+rmse(databind1$V1, databind1$predict_1)
+```
+
+## Linear regression
+
+```{r}
+# factor 변수 중 unique value 있는지 찾아보기
+str(data_train1)
+sapply(lapply(data_train1, unique), length)
+
+# Linear Model  (dong은 제외하고 분석:삭제)
+linear1 <- lm(unit_price ~.-year, data = data_train1)
+#linear1 <- lm(unit_price ~ dong+exclusive_use_area+floor+bigMarket05+bigMarket10+bigMarket15+school05+school10+school15+subway05+subway10+subway15+hospital05+hospital10+hospital15+movie05+movie10+movie15+kid05+kid10+kid15+office05+office10+office15+transaction_month+year_of_completion_f, data = data_train1)
+
+summary(linear1)
+print(linear1)
+linear1$coefficients
+```
+## Linear regression parameter tuning
+```{r}
+step(linear1, direction = "both")
+```
+## Linear regression prediction & RMSE calculation
+```{r}
+linear_best<-lm(formula = unit_price ~ dong + floor + bigMarket05 + bigMarket15 + 
+    school05 + school10 + school15 + subway05 + subway10 + subway15 + 
+    hospital05 + hospital15 + movie05 + kid05 + kid10 + office10 + 
+    transaction_month + year_of_completion_f, data = data_train1)
+
+# test data 에 적용
+predict_2 <- predict(linear_best, data_test1[,-25])
+summary(predict_2)
+
+data_test1 %>% select(dong) %>% unique()
+data_train1 %>% select(dong) %>% unique()
+# actual, predicted cbind
+
+databind2 <- cbind(data_test1[,25],predict_2)
+#databind2 <- cbind(data_test1[,28],predict_2)
+databind2 <- as.data.frame(databind2)
+summary(databind2)
+
+# RMSE 계산
+# install.packages("Metrics")
+library(Metrics)
+rmse(databind2$V1, databind2$predict_2)
+
+```
+
+## Random Forest 
+
+```{r}
+install.packages("randomForest", repos ="http://cran.us.r-project.org")
+library(randomForest)
+
+rf.tree1 <- randomForest(unit_price~.-year, data = data_train1,
+                         importance = TRUE,
+                         ntree = 1000,mtry = 2)
+
+# tree 결과
+print(rf.tree1)
+summary(rf.tree1)
+install.packages("rpart.plot", repos ="http://cran.us.r-project.org")
+library(rpart.plot)
+
+importance(rf.tree1)
+importance(rf.tree1, type = 1)
+varImpPlot(rf.tree1, type = 1)
+varImpPlot(rf.tree1, type = 2)
+
+```
+
+## Random Forest parameter tuning
+
+```{r}
+printcp(tree1)
+plotcp(tree1)
+tree1 <- prune(tree1, cp= tree1$cptable[which.min(tree1$cptable[, "xerror"]), "CP"])
+
+rpart.plot(tree1)
+```
+
+## Random Forest prediction & RMSE calculation
+
+```{r}
+# test data 에 적용
+
+predict_3 <- predict(rf.tree1, data_test1)
+summary(predict_3)
+
+# actual, predicted cbind
+
+databind3 <- cbind(data_test1[,25],predict_3)
+databind3 <- as.data.frame(databind3)
+summary(databind3)
+
+# RMSE 계산
+install.packages("Metrics", repos = "http://cran.us.r-project.org")
+library(Metrics)
+rmse(databind3$V1, databind3$predict_3)
+```
+
+## Gradient Boost Model 
+
+```{r}
+install.packages("gbm", repos ="http://cran.us.r-project.org")
+library(gbm)
+
+gbm.tree1 <- gbm(unit_price~.-year, data = data_train1, distribution = "gaussian",
+                  n.trees = 1000, shrinkage = 0.01, interaction.depth = 4)
+
+# tree 결과
+print(gbm.tree1)
+summary(gbm.tree1)
+```
+
+## Gradient Boost Model parameter tuning
+
+```{r}
+# printcp(tree1)
+# plotcp(tree1)
+# tree1 <- prune(tree1, cp= tree1$cptable[which.min(tree1$cptable[, "xerror"]), "CP"]) 
+# 
+# rpart.plot(tree1)
+```
+
+##Gradient Boost Model prediction & RMSE calculation
+
+```{r}
+
+# test data 에 적용
+predict_4 <- predict.gbm(object = gbm.tree1,
+                             newdata = data_test1,
+                             n.trees = 1000,
+                             type = "response")
+summary(predict_4)
+
+# actual, predicted cbind
+
+databind4 <- cbind(data_test1[,25],predict_4)
+databind4 <- as.data.frame(databind4)
+summary(databind4)
+
+# RMSE 계산
+install.packages("Metrics", repos ="http://cran.us.r-project.org")
+library(Metrics)
+rmse(databind4$V1, databind4$predict_4)
+```

@@ -1,0 +1,1 @@
+bigmarket : 대형마트, school 학교(초중고 포함), hospital 병원, movie 문화생활 장소, kid: 어린이집/유치원 ,office 공공기관 

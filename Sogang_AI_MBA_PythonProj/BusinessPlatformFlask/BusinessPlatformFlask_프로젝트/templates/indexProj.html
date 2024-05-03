@@ -36,8 +36,6 @@
                 <div class="container-fluid" style="padding-left: 100px; padding-right: 100px">
                 <div class="d-sm-flex align-items-center justify-content-between mb-4 mt-5">
                     <h1 class="h3 mb-0 text-gray-800" style="font-weight: bold;">부동산 정보</h1>
-                    <h1 class="h3 mb-0 text-gray-800" style="font-weight: bold;">M85311 이태환</h1>
-                    <h1 class="h3 mb-0 text-gray-800" style="font-weight: bold;">M85313 김영빈</h1>
                 </div>
                 </div>
 
@@ -47,8 +45,13 @@
                             <div class="card-header py-3 d-flex flex-row align-items-center">
                                 <h6 class="m-0 font-weight-bold text-primary">2024년 4월 부동산 실거래가_TOP 10</h6>
                                 <button type="button" class="btn btn-primary ml-3" id="box-chart-button">서대문구</button>
-                                <button type="button" class="btn btn-primary ml-3" id="box-chart-button1">강남구</button>
+                                <button type="button" class="btn btn-warning ml-3" id="box-chart-button1">강남구</button>
+                                <div class="card-header py-1 d-flex flex-row align-items-center">
+                                    <h10 class="font-weight-bold text-primary">(단위: 만원)</h10>
+                                </div>
+                                </br>
                             </div>
+
                             <div class="card-body">
                                 <div class="chart-area" id="boxChart"></div>
                             </div>
@@ -62,7 +65,7 @@
                             <div class="card-header py-3 d-flex flex-row align-items-center">
                                 <h6 class="m-0 font-weight-bold text-primary">2024년 4월 부동산 거래 법정동 비율</h6>
                                 <button type="button" class="btn btn-primary ml-3" id="pie-chart-button">서대문구</button>
-                                <button type="button" class="btn btn-primary ml-3" id="pie-chart-button1">강남구</button>
+                                <button type="button" class="btn btn-warning ml-3" id="pie-chart-button1">강남구</button>
                             </div>
                             <div class="card-body">
                                 <div class="chart-area" id="pieChart"></div>
@@ -77,7 +80,7 @@
                             <div class="card-header py-3 d-flex flex-row align-items-center">
                                 <h6 class="m-0 font-weight-bold text-primary">2024년 4월 부동산 거래일자별 거래수</h6>
                                 <button type="button" class="btn btn-primary ml-3" id="time-chart-button">서대문구</button>
-                                <button type="button" class="btn btn-primary ml-3" id="time-chart-button1">강남구</button>
+                                <button type="button" class="btn btn-warning ml-3" id="time-chart-button1">강남구</button>
                             </div>
                             <div class="card-body">
                                 <div class="chart-area" id="timeSeries"></div>
@@ -86,20 +89,18 @@
                     </div>
                 </div>
 
-                <div class="d-sm-flex align-items-center justify-content-between mb-4 mt-5">
-                    <h1 class="h3 mb-0 text-gray-800" style="font-weight: bold;">부동산 뉴스</h1>
-                </div>
                 <div class="row">
-                    {% for company1_news in company1_news_list %}
-                    <div class="card shadow mb-4 ml-3">
-                        <div class="card-header py-3">
-                            <a href="{{ company1_news.url }}"><h6 class="m-0 font-weight-bold text-primary">{{ company1_news.title }}</h6></a>
-                        </div>
-                        <div class="card-body">
-                            <p>{{ company1_news.description }}</p>
+                    <div class="col-xl-12 col-lg-12">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3 d-flex flex-row align-items-center">
+                                <h6 class="m-0 font-weight-bold text-primary">부동산 뉴스</h6>
+                                <button type="button" class="btn btn-success ml-3" id="load-news-btn">부동산 뉴스 로드</button>
+                            </div>
                         </div>
                     </div>
-                    {% endfor %}
+                    <div class="card-body" id="news-container">
+                    <!-- 뉴스 카드가 여기에 동적으로 삽입될 것입니다 -->
+                    </div>
                 </div>
 
             </div>
@@ -133,6 +134,35 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.11/c3.min.js"></script>
     <script src="js/demo/chart-area-demo.js"></script>
     <script src="js/demo/chart-exercise.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#load-news-btn').click(function() {
+                $('#news-container').html('<div class="text-center"><p>로드 중...</p></div>'); // 로드 중 메시지 표시
+                $.ajax({
+                    type: "POST",
+                    url: "/fetch_news",
+                    data: { company_name: "부동산" },
+                    success: function(response) {
+                        $('#news-container').empty();
+                        response.forEach(function(news) {
+                            var news_card = '<div class="card shadow mb-4 ml-3">' +
+                                '<div class="card-header py-3">' +
+                                '<a href="' + news.url + '"><h6 class="m-0 font-weight-bold text-primary">' + news.title + '</h6></a>' +
+                                '</div>' +
+                                '<div class="card-body">' +
+                                '<p>' + news.description + '</p>' +
+                                '</div>' +
+                                '</div>';
+                            $('#news-container').append(news_card);
+                        });
+                    },
+                    error: function() {
+                        alert("뉴스를 가져오는 데 실패했습니다.");
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 
 
