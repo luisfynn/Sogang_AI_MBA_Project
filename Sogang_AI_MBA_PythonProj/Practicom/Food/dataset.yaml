@@ -1,0 +1,4 @@
+train: C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/Food/korean_food_sample/train
+val: C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/Food/korean_food_sample/val
+nc: 3
+names: ['kimchi', 'bulgogi', 'bibimbab']

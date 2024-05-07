@@ -52,7 +52,7 @@ from trainer import findHeight
 # 참조링크 : https://github.com/amineHorseman/facial-expression-recognition-using-cnn
 # 참조링크: https://github.com/petercunha/Emotion/blob/master/emotions.py#L4
 # 참조링크: https://github.com/BaekKyunShin/Computer-Vision-Basic/blob/main/Project3-Emotion_Classification/Emotion_Classification_in_Video.ipynb
-import dlib
+# import dlib
 from keras.models import load_model
 import cv2
 import numpy as np
@@ -446,7 +446,7 @@ def emotion_process_video(video_filename):
     network.compile(optimizer='adam',
                   loss='categorical_crossentropy',  # 다중 클래스 분류 문제에 적합한 손실 함수
                   metrics=['accuracy'])  # 평가 지표로 정확도 사용
-    cnn_face_detector = dlib.cnn_face_detection_model_v1('mmod_human_face_detector.dat')
+    # cnn_face_detector = dlib.cnn_face_detection_model_v1('mmod_human_face_detector.dat')
 
     # 색상 및 감정 리스트
     green_color = (0, 255, 0)
