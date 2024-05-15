@@ -1,0 +1,4 @@
+train: C:/Users/medit/Desktop/WorkSpace/pythonProject/Practicom/archive/train
+val: C:/Users/medit/Desktop/WorkSpace/pythonProject/Practicom/archive/test
+nc: 7
+names: ['angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise']

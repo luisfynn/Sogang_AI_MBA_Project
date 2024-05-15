@@ -1,0 +1,13 @@
+# dataset.yaml 파일
+path: C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom2/Pose_DataSet
+train: images/train
+val: images/val
+test:
+
+# Keypoints
+kpt_shape: [17, 3]  # 키포인트 개수와 차원 수 (x, y, visibility)
+flip_idx: [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15]
+
+# 클래스 사전
+names:
+  0: person

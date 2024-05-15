@@ -3,6 +3,14 @@ googleAppCrawling_챌린저스.*
 googleHTML_챌린저스.*
 googleHTML_챌린저스_10000.*
 
+# LFS
+Pose_DataSet/
+Pose_DataSet2/
+.idea/
+
+# model
+*.pth
+
 # zip
 *.zip
 

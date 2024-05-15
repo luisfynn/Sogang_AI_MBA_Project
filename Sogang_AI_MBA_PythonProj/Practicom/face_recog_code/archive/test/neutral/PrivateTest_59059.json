@@ -1,0 +1,27 @@
+{
+  "version": "5.2.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "neutral",
+      "points": [
+        [
+          6.5,
+          8.899999999999999
+        ],
+        [
+          43.4,
+          43.9
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "PrivateTest_59059.jpg",
+  "imageData": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAAwADABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/APP7e1LEKoJYnAA7mvTrOxSCO3tyMxWyABQerdyfxq9dQwJFucbcDOK5jVbdGjWUAFhNuIQ5BHSnW0TzyiYE74zvY4647f0qxd6f5bR45DIDkd/esDT4xayRzMUWMOoJcDnkcDPSu3u5YbSaWSeQRRrjJJ65APFZN3rekXQCpdrv/hXOMmqlwyyWYm3eWucAj+L1qTSZRE22Mhi2eh6Vsq0TW1jaFv3nlsyLj+HOf05rnrfTvtd3ZKwUxJMHKnoT0x71ta4Ipria1uFLh5chR3HQVyJ8HPdak32a2CR5zh25x7U3xRp89k5s7Z5DbxvsY7j8rY/xqnodlc217BJ9sYAE5XOe3Ir0qwsReays6AkWtlEgU9mkG4/p/OqmmRk3MPH8Y7e9aetaSLi5MzNtaFSQqHkk9B9c1l+H4b2yvzeXoLoynEan7uOh9+ePxrmNW1MXAn2MZJ2laR029jjv2PtT/DumTapqFs3lt5Mj7OnPvXrGn6T9jSbepaeRzJJx0A4VfoFAFcfDcrp1rLeS7T5CeZgc4PQfr/Kr2ia0fFXhuea3jC3Su0cyqeFYZ5+h61z19o+oQElbqeWQcByRtHtjjA+h9K5i+tdRSeSOMK8yptVCMbvz/nXW3GoQ+HvCFvdtzdzq0VugGD5m3BJ9AM/oK6rwD4jOt6IsN1JvvLWLyZGLcuP4SffHB+lcPqzvD4cSNjmS4lDyEcZxz09OP0rmfh3r39jeKrmOQgW1wSpz0znINeq6w9rLZPPAqyk4JXAJGfauenn0rSz9suHQeUuFRTud/Qf/AF68z8Q67ca5qaSzgLFG22GJfuxjP6k+tdH4RvZ7O5lEDskhTcuPUc4/LNf/2Q==",
+  "imageHeight": 48,
+  "imageWidth": 48
+}

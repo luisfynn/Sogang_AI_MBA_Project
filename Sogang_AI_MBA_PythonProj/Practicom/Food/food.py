@@ -2,16 +2,19 @@
 # 패키지 설치
 # pip install torch torchvision pandas scikit-learn openpyxl
 
-# labelme 설치 및 이미지 라벨링//anaconda prompt 사전 설치 필요//파이참 종료후 할 것
+# # labelme 설치 및 이미지 라벨링//anaconda prompt 사전 설치 필요//파이참 종료후 할 것
 # set PYTHONIOENCODING=utf-8
 # conda create --name=labelme python=3
+# pip install labelme
 # conda activate labelme
 # pip install labelme
+# 이래도 안되면 시스템 환경변수 추가 환경변수명 PYTHONUTF8 값 1
 
-# anaconda prompt 닫은 후, 다시 열었을 때
+
+# # anaconda prompt 닫은 후, 다시 열었을 때
 # conda activate labelme
 # labelme 실행: labelme C:/Users/medit/Desktop/WorkSpace/pythonProject/Practicom/korean_food_sample --autosave
-# 이미지 라벨 작업
+# # 이미지 라벨 작업
 ########################################################################################################################
 # yolo 모델을 이용한 학습
 # 패키지 설치
@@ -103,7 +106,7 @@ move_files(val_files, images_dir, val_dir)
 # 학습된 라벨 확인:class(label)이 한글로 정상 출력되는지 확인
 import torch
 
-model = torch.hub.load('ultralytics/yolov5', 'custom', path= r'yolov5/runs/train/exp5/weights/best.pt')
+model = torch.hub.load('ultralytics/yolov5', 'custom', path= r'yolov5/runs/train/exp/weights/best.pt')
 print(model.names)  # 클래스 이름 출력
 ########################################################################################################################
 # 예측
@@ -113,7 +116,7 @@ import torch
 # 모델 로드
 # 'custom' 사용은 사용자 정의 모델 가중치를 로드할 때 필요합니다.
 # 'best.pt'는 학습 과정에서 가장 좋은 성능을 보인 모델의 가중치 파일입니다.
-model = torch.hub.load('ultralytics/yolov5', 'custom', path= r'yolov5/runs/train/exp5/weights/best.pt')
+model = torch.hub.load('ultralytics/yolov5', 'custom', path= r'yolov5/runs/train/exp/weights/best.pt')
 
 # 이미지 로드 및 예측
 img = r'Food/korean_food_sample/val/Img_069_0005.jpg'  # 예측할 이미지의 경로
