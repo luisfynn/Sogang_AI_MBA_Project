@@ -1,5 +1,5 @@
 # dataset.yaml 파일
-path: C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom2/Pose_DataSet
+path: C:\Users\luisf\OneDrive\desktop\WorkSpace\Sogang_AI_MBA_Project\Sogang_AI_MBA_PythonProj\practicom2\coco8-pose
 train: images/train
 val: images/val
 test:
