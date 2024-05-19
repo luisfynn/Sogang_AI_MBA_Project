@@ -563,7 +563,7 @@ model = YOLO("trained_yolov8x-pose-p6.pt")
 
 # 비디오 파일 열기 및 사이즈 확인
 # filename = "How to do a Push-Up _ Proper Form & Technique _ NASM.mp4"
-filename = "pushup1.mp4"
+filename = "pushup.mp4"
 cap = cv2.VideoCapture(filename)
 subject = filename.split('.')[0]
 
@@ -581,6 +581,8 @@ bcount = 0
 bfail = 0
 direction = 0
 prevPercent = 0
+current_angle = 0
+H_SIDE = 0
 
 def plot_skeleton_kpts(im, kpts, steps, orig_shape=None):
     # Plot the skeleton and keypoints for COCO dataset
@@ -678,18 +680,36 @@ while cap.isOpened():
                 left_arm_x = xy_values.flatten()[9]                     # 왼손 X좌표
                 right_arm_x = xy_values.flatten()[10]                    # 오른손 X좌표
 
-                H_SIDE = 0
-                if left_arm_x < left_foot_x:
-                    H_SIDE = 0
-                else:
-                    H_SIDE = 1
-
                 if H_SIDE == 0:
+                    if left_arm_x < left_foot_x:
+                        current_angle = findAngle(frame, xy_values.flatten(), 5, 7, 9, draw=False)
+                        H_SIDE = 1
+                    else:
+                        current_angle = findAngle(frame, xy_values.flatten(), 6, 8, 10, draw=False)
+                        H_SIDE = 2
+
+                if H_SIDE == 1:
                     # 왼팔 각도 측정
                     angle_arm = findAngle(frame, xy_values.flatten(), 5, 7, 9, draw=False)
                     print(f'H_SIDE:{H_SIDE} angle_arm: {angle_arm}')
                     # angle_arm = 360 - angle_arm
                     # print(f'H_SIDE:{H_SIDE} angle_arm_fix: {angle_arm}')
+
+                    if direction == 0:
+                        # print(f'H_SIDE:{H_SIDE} current_angle: {current_angle} angle_arm: {angle_arm}')
+                        if current_angle < angle_arm:
+                            angle_arm = current_angle
+                        print(f'H_SIDE:{H_SIDE} direction:{direction }current_angle: {current_angle} angle_arm: {angle_arm}')
+                        # else:
+                        #     current_angle = angle_arm
+                    elif direction == 1:
+                        if current_angle > angle_arm:
+                            print(f"current_angle:{current_angle} angle_arm:{angle_arm}")
+                            angle_arm = current_angle
+                        print(
+                            f'H_SIDE:{H_SIDE} direction:{direction}current_angle: {current_angle} angle_arm: {angle_arm}')
+                        # else:
+                        #     current_angle = angle_arm
                 else:
                     # 오른팔 각도 측정
                     angle_arm = findAngle(frame, xy_values.flatten(), 6, 8, 10, draw=False)
@@ -697,37 +717,136 @@ while cap.isOpened():
                     angle_arm = 360 - angle_arm
                     print(f'H_SIDE:{H_SIDE} angle_arm_fix: {angle_arm}')
 
+                    if direction == 0:
+                        if current_angle < angle_arm:
+                            angle_arm = current_angle
+                    elif direction == 1:
+                        if current_angle > angle_arm:
+                            print(f"current_angle:{current_angle} angle_arm:{angle_arm}")
+                            angle_arm = current_angle
+
+                if angle_arm > 150:
+                    angle_arm = 150
+                elif angle_arm < 120:
+                    angle_arm = 120
+
                 # print(f'xy_values: {xy_values.flatten()}')
-                percentage = np.interp(angle_arm, (110, 170), (100, 0))  # 스쿼트 굽힌 자세 120도 미만 : 100%, 선 자세 170도 이상 : 0%
-                bar = np.interp(angle_arm, (110, 170), (200, fh - 300))
-                print(f'percentage: {percentage}, bar: {bar}')
+                if direction == 0 or direction == 1:
+                    percentage = np.interp(angle_arm, (120, 150), (100, 0))  # 팔 굽힌 자세 110 미만 : 100%, 편 자세 170도 이상 : 0%
+                    bar = np.interp(angle_arm, (120, 150), (200, fh - 300))
+                    print(f'percentage: {percentage}, bar: {bar}')
 
-                # percentage 바 그리기
-                percent_color = (64, 224, 208)  # Turquoise
-                cv2.line(frame, (100, 200), (100, fh - 300), (255, 255, 255), 30)
-                cv2.line(frame, (100, int(bar)), (100, fh - 300), percent_color, 30)
+                    # percentage 바 그리기
+                    percent_color = (64, 224, 208)  # Turquoise
+                    cv2.line(frame, (100, 200), (100, fh - 300), (255, 255, 255), 30)
+                    cv2.line(frame, (100, int(bar)), (100, fh - 300), percent_color, 30)
 
-                percentage = round(percentage, 0)
-                # 텍스트 추가 (percentage)
-                text = f"{percentage}%"
-                font_scale = 0.8
-                font_thickness = 2
-                text_color = (64, 224, 208)  # Turquoise
-                bg_color = (204, 204, 255)  # Periwinkle
-                font = cv2.FONT_HERSHEY_SIMPLEX
+                    percentage = round(percentage, 0)
+                    # 텍스트 추가 (percentage)
+                    text = f"{percentage}%"
+                    font_scale = 0.8
+                    font_thickness = 2
+                    text_color = (64, 224, 208)  # Turquoise
+                    bg_color = (204, 204, 255)  # Periwinkle
+                    font = cv2.FONT_HERSHEY_SIMPLEX
 
-                # 텍스트 크기 계산
-                (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, font_thickness)
-                text_x = 160  # 텍스트의 x 좌표
-                text_y = int(bar) - 10  # 텍스트의 y 좌표
+                    # 텍스트 크기 계산
+                    (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, font_thickness)
+                    text_x = 160  # 텍스트의 x 좌표
+                    text_y = int(bar) - 10  # 텍스트의 y 좌표
 
-                # 텍스트 배경 박스 그리기
-                cv2.rectangle(frame, (text_x - 5, text_y - text_height - 5),
-                              (text_x + text_width + 5, text_y + baseline + 5),
-                              bg_color, cv2.FILLED)
+                    # 텍스트 배경 박스 그리기
+                    cv2.rectangle(frame, (text_x - 5, text_y - text_height - 5),
+                                  (text_x + text_width + 5, text_y + baseline + 5),
+                                  bg_color, cv2.FILLED)
 
-                # 텍스트 그리기
-                cv2.putText(frame, text, (text_x, text_y), font, font_scale, text_color, font_thickness)
+                    # 텍스트 그리기
+                    cv2.putText(frame, text, (text_x, text_y), font, font_scale, text_color, font_thickness)
+                elif direction == 2:
+                    percentage = np.interp(angle_arm, (120, 150), (100, 0))  # 팔 굽힌 자세 110 미만 : 100%, 편 자세 170도 이상 : 0%
+                    print(f'percentage: {percentage}')
+
+                    # percentage 바 그리기
+                    percent_color = (64, 224, 208)  # Turquoise
+                    cv2.line(frame, (100, 200), (100, fh - 300), (255, 255, 255), 30)
+                    cv2.line(frame, (100, int(200)), (100, fh - 300), percent_color, 30)
+
+                    # 텍스트 추가 (percentage)
+                    text = f"100.0%"
+                    font_scale = 0.8
+                    font_thickness = 2
+                    text_color = (64, 224, 208)  # Turquoise
+                    bg_color = (204, 204, 255)  # Periwinkle
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+
+                    # 텍스트 크기 계산
+                    (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, font_thickness)
+                    text_x = 160  # 텍스트의 x 좌표
+                    text_y = int(200) - 10  # 텍스트의 y 좌표
+
+                    # 텍스트 배경 박스 그리기
+                    cv2.rectangle(frame, (text_x - 5, text_y - text_height - 5),
+                                  (text_x + text_width + 5, text_y + baseline + 5),
+                                  bg_color, cv2.FILLED)
+
+                    # 텍스트 그리기
+                    cv2.putText(frame, text, (text_x, text_y), font, font_scale, text_color, font_thickness)
+                else:
+                    percentage = np.interp(angle_arm, (120, 150), (100, 0))  # 팔 굽힌 자세 110 미만 : 100%, 편 자세 170도 이상 : 0%
+                    print(f'percentage: {percentage}')
+
+                    # percentage 바 그리기
+                    percent_color = (64, 224, 208)  # Turquoise
+                    cv2.line(frame, (100, 200), (100, fh - 300), (255, 255, 255), 30)
+                    cv2.line(frame, (100, fh - 300), (100, fh - 300), percent_color, 30)
+
+                    # 텍스트 추가 (percentage)
+                    text = f"0%"
+                    font_scale = 0.8
+                    font_thickness = 2
+                    text_color = (64, 224, 208)  # Turquoise
+                    bg_color = (204, 204, 255)  # Periwinkle
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+
+                    # 텍스트 크기 계산
+                    (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, font_thickness)
+                    text_x = 160  # 텍스트의 x 좌표
+                    text_y = int(fh - 300) - 10  # 텍스트의 y 좌표
+
+                    # 텍스트 배경 박스 그리기
+                    cv2.rectangle(frame, (text_x - 5, text_y - text_height - 5),
+                                  (text_x + text_width + 5, text_y + baseline + 5),
+                                  bg_color, cv2.FILLED)
+
+                    # 텍스트 그리기
+                    cv2.putText(frame, text, (text_x, text_y), font, font_scale, text_color, font_thickness)
+
+                # # percentage 바 그리기
+                # percent_color = (64, 224, 208)  # Turquoise
+                # cv2.line(frame, (100, 200), (100, fh - 300), (255, 255, 255), 30)
+                # cv2.line(frame, (100, int(bar)), (100, fh - 300), percent_color, 30)
+                #
+                # percentage = round(percentage, 0)
+                # # 텍스트 추가 (percentage)
+                # text = f"{percentage}%"
+                # font_scale = 0.8
+                # font_thickness = 2
+                # text_color = (64, 224, 208)  # Turquoise
+                # bg_color = (204, 204, 255)  # Periwinkle
+                # font = cv2.FONT_HERSHEY_SIMPLEX
+                #
+                # # 텍스트 크기 계산
+                # (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, font_thickness)
+                # text_x = 160  # 텍스트의 x 좌표
+                # text_y = int(bar) - 10  # 텍스트의 y 좌표
+                #
+                # # 텍스트 배경 박스 그리기
+                # cv2.rectangle(frame, (text_x - 5, text_y - text_height - 5),
+                #               (text_x + text_width + 5, text_y + baseline + 5),
+                #               bg_color, cv2.FILLED)
+                #
+                # # 텍스트 그리기
+                # cv2.putText(frame, text, (text_x, text_y), font, font_scale, text_color, font_thickness)
 
                 # 카운트 박스 그리기 및 bcount 값을 중앙에 표시
                 text = f"{int(bcount)}"
@@ -755,68 +874,78 @@ while cap.isOpened():
                 cv2.putText(frame, text, (text_x, text_y), font, font_scale, font_color, font_thickness)
 
                 # 스쿼트 카운트 측정
-                if percentage >= 95:
+                if percentage == 100:
                     if direction == 0:
-                        if H_SIDE == 0:
-                            # 다리 각도가 150도 이하면 fail
-                            angle_body = findAngle(frame, xy_values.flatten(), 11, 13, 15, draw=False) #왼쪽 다리 각도
-                        else:
-                            angle_body = findAngle(frame, xy_values.flatten(), 12, 14, 16, draw=False) # 오른쪽 다리 각도
-                        print(f'angle_body_abs: {abs(angle_body)} angle_body:{angle_body}')
-                        if angle_body < 0:
-                            angle_body = abs(angle_body)
-
-                        # 조건 확인
-                        if angle_body >= 0 and angle_body <= 360:
-                            bcount += 0.5
-                            direction = 1
-                        else:
-                            if percentage == 100:
-                                if prevPercent == 0:
-                                    bfail += 1
-
-                                    # 에러 문구 표시
-                                    print(f"Leg angle less than 150 degrees: {angle_body}")
-                                    text = f"Leg angle less than 150 degrees: {angle_body}"  # 어깨-허리-다리가 일직선이 아닙니다
-                                    font_scale = 0.8
-                                    font_thickness = 2
-                                    font_color = (255, 0, 0)  # 빨간색 폰트
-                                    box_color = (204, 204, 255)  # Periwinkle
-                                    font = cv2.FONT_HERSHEY_SIMPLEX
-
-                                    # 텍스트 크기 계산
-                                    (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale,
-                                                                                          font_thickness)
-                                    # 텍스트 위치 계산 (중앙에 맞추기)
-                                    text_x = (fw - text_width) // 2
-                                    text_y = (fh + text_height) // 2
-
-                                    # 텍스트 그리기
-                                    cv2.putText(frame, text, (text_x, text_y), font, font_scale, font_color,
-                                                font_thickness)
-
-                                    # 에러 이미지 저장
-                                    error_dir = "errors"
-                                    if not os.path.exists(error_dir):
-                                        os.makedirs(error_dir)
-                                    error_files = sorted(
-                                        [f for f in os.listdir(error_dir) if
-                                         f.startswith("error") and f.endswith(".png")])
-                                    if error_files:
-                                        last_error_num = int(error_files[-1][5:-4])  # "error" 뒤와 ".png" 앞의 숫자 추출
-                                        error_filename = f"error{last_error_num + 1}.png"
-                                    else:
-                                        error_filename = "error0.png"
-                                    cv2.imwrite(os.path.join(error_dir, error_filename), frame)
-
-                                prevPercent = 1
-                if percentage <= 5:
+                        bcount += 0.5
+                        direction = 2
+                        current_angle = 120
+                        # if H_SIDE == 0:
+                        #     # 다리 각도가 150도 이하면 fail
+                        #     angle_body = findAngle(frame, xy_values.flatten(), 11, 13, 15, draw=False) #왼쪽 다리 각도
+                        # else:
+                        #     angle_body = findAngle(frame, xy_values.flatten(), 12, 14, 16, draw=False) # 오른쪽 다리 각도
+                        # print(f'angle_body_abs: {abs(angle_body)} angle_body:{angle_body}')
+                        # if angle_body < 0:
+                        #     angle_body = abs(angle_body)
+                        #
+                        # # 조건 확인
+                        # if angle_body >= 0 and angle_body <= 360:
+                        #     bcount += 0.5
+                        #     direction = 1
+                        # else:
+                        #     if percentage == 100:
+                        #         if prevPercent == 0:
+                        #             bfail += 1
+                        #
+                        #             # 에러 문구 표시
+                        #             print(f"Leg angle less than 150 degrees: {angle_body}")
+                        #             text = f"Leg angle less than 150 degrees: {angle_body}"  # 어깨-허리-다리가 일직선이 아닙니다
+                        #             font_scale = 0.8
+                        #             font_thickness = 2
+                        #             font_color = (255, 0, 0)  # 빨간색 폰트
+                        #             box_color = (204, 204, 255)  # Periwinkle
+                        #             font = cv2.FONT_HERSHEY_SIMPLEX
+                        #
+                        #             # 텍스트 크기 계산
+                        #             (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale,
+                        #                                                                   font_thickness)
+                        #             # 텍스트 위치 계산 (중앙에 맞추기)
+                        #             text_x = (fw - text_width) // 2
+                        #             text_y = (fh + text_height) // 2
+                        #
+                        #             # 텍스트 그리기
+                        #             cv2.putText(frame, text, (text_x, text_y), font, font_scale, font_color,
+                        #                         font_thickness)
+                        #
+                        #             # 에러 이미지 저장
+                        #             error_dir = "errors"
+                        #             if not os.path.exists(error_dir):
+                        #                 os.makedirs(error_dir)
+                        #             error_files = sorted(
+                        #                 [f for f in os.listdir(error_dir) if
+                        #                  f.startswith("error") and f.endswith(".png")])
+                        #             if error_files:
+                        #                 last_error_num = int(error_files[-1][5:-4])  # "error" 뒤와 ".png" 앞의 숫자 추출
+                        #                 error_filename = f"error{last_error_num + 1}.png"
+                        #             else:
+                        #                 error_filename = "error0.png"
+                        #             cv2.imwrite(os.path.join(error_dir, error_filename), frame)
+                        #
+                        #         prevPercent = 1
+                elif percentage == 0:
                     if direction == 1:
                         bcount += 0.5
-                        direction = 0
+                        direction = 3
                         prevPercent = 0
+                        current_angle = 150
+                else:
+                    if direction == 2 and percentage < 100:
+                        direction = 1
+                    elif direction == 3 and percentage > 0:
+                        direction = 0
 
-                print(f'bcount: {bcount}, bfail: {bfail}')
+
+                print(f'bcount: {bcount}, bfail: {bfail}, direction: {direction}')
                 # 성공 및 실패 카운트 표기
                 # 카운트 박스 그리기 및 bcount, bfail 값을 중앙에 표시
                 box_color = (204, 204, 255)
