@@ -143,7 +143,7 @@ def train_model(model, optimizer, train_loader, loss_fn, num_epochs=3):
         elapsed_time = time.time() - start_time  # 에폭 처리 시간 계산
         print(f"Epoch {epoch + 1} completed in {elapsed_time:.2f} seconds with Loss: {total_loss / len(train_loader)}")
 
-def main():
+def train_predict():
     # 설정된 경로에 따라 데이터 로드
     train_path = r'C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/sentences/감성대화말뭉치(최종데이터)_Training.xlsx'
     test_path = r'C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/sentences/감성대화말뭉치(최종데이터)_Validation.xlsx'
@@ -186,5 +186,12 @@ def main():
     predicted_emotion = predict_sentiment(input_text, model, tokenizer, label_encoder)
     print("Predicted Emotion:", predicted_emotion)
 
-if __name__ == '__main__':
-    main()
+
+def bertPredict(input_text):
+    # print("Running prediction...")
+    # input_text = "오늘 정말 행복한 날이네요!"
+    tokenizer = BertTokenizer.from_pretrained('klue/bert-base')
+    model, optimizer, label_encoder = load_model('bert_sentiment_model.pth')
+    predicted_emotion = predict_sentiment(input_text, model, tokenizer, label_encoder)
+    print("Predicted Emotion:", predicted_emotion)
+    return predicted_emotion

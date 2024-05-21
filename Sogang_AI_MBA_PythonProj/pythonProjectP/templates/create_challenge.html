@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Challenge</title>
+</head>
+<body>
+    <h1>Create Challenge</h1>
+    <form action="/create_challenge" method="POST">
+        <label for="opponent">Select Opponent:</label>
+        <select id="opponent" name="opponent">
+            {% for opponent in opponent_candidates %}
+            <option value="{{ opponent.id }}">{{ opponent.username }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <button type="submit">Create Challenge</button>
+    </form>
+
+    <!-- 플래시 메시지 표시 영역 -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info" role="alert">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+</body>
+</html>
