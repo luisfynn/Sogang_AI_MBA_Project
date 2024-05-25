@@ -1,4 +1,4 @@
-train: C:/Users/medit/Desktop/WorkSpace/pythonProject/Practicom/archive/train
-val: C:/Users/medit/Desktop/WorkSpace/pythonProject/Practicom/archive/test
+train: C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/face_recog_code/feelingdata/train
+val: C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/face_recog_code/feelingdata/test
 nc: 7
 names: ['angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise']

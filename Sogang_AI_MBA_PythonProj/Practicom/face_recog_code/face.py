@@ -27,7 +27,10 @@ import json
 from PIL import Image
 
 # JSON 파일과 이미지 파일이 저장된 디렉토리
-json_dir = r'C:/Users/medit/Desktop/WorkSpace/pythonProject/Practicom/archive'
+json_dir = r'C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/face_recog_code/feelingdata'
+
+# 클래스 매핑
+label_mapping = {'angry': 0, 'disgust': 1, 'fear': 2, 'happy': 3, 'neutral': 4, 'sad': 5, 'surprise': 6}
 
 for json_file in os.listdir(json_dir):
     if json_file.endswith('.json'):
@@ -47,7 +50,11 @@ for json_file in os.listdir(json_dir):
         yolo_data = []
         for item in data['shapes']:
             # 각 객체 정보 추출 및 변환
-            class_id = 0  # 클래스 ID 설정 필요
+            class_name = item['label']  # JSON 파일에서 클래스 이름 추출
+            class_id = label_mapping.get(class_name, -1)  # 클래스 이름을 ID로 변환, 없는 경우 -1 반환
+            if class_id == -1:
+                continue  # 유효하지 않은 클래스 이름인 경우 스킵
+
             x_center = (item['points'][0][0] + item['points'][1][0]) / 2 / width
             y_center = (item['points'][0][1] + item['points'][1][1]) / 2 / height
             bbox_width = abs(item['points'][0][0] - item['points'][1][0]) / width
@@ -65,8 +72,8 @@ import shutil
 from sklearn.model_selection import train_test_split
 
 # 폴더 정의
-train_dir = r'C:/Users/medit/Desktop/WorkSpace/pythonProject/Practicom/archive/train'
-val_dir = r'C:/Users/medit/Desktop/WorkSpace/pythonProject/Practicom/archive/test'
+train_dir = r'C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/face_recog_code/feelingdata/train'
+val_dir = r'C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/face_recog_code/feelingdata/test'
 yolo_labels_dir = json_dir
 images_dir = yolo_labels_dir
 
@@ -96,15 +103,13 @@ move_files(val_files, images_dir, val_dir)
 
 # YOLO 학습 실행
 # 경로 주의
-# python train.py --img 640 --batch 16 --epochs 50 --data "C:/Users/medit/Desktop/WorkSpace/pythonProject/Practicom/face_dataset.yaml" --weights yolov5s.pt
-# --> 완료시 runs/exp/weights 폴더 아래 best.pt, last.pt 파일 생성됨
-
+# python yolov5/train.py --img 640 --batch 16 --epochs 50 --data "C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/face_recog_code/face_dataset.yaml" --weights yolov5s.pt# --> 완료시 runs/exp/weights 폴더 아래 best.pt, last.pt 파일 생성됨
 # 학습된 라벨 확인:class(label)이 한글로 정상 출력되는지 확인
 import torch
-
-model = torch.hub.load('ultralytics/yolov5', 'custom', path= r'C:/Users/medit/Desktop/WorkSpace/pythonProject/yolov5/runs/train/exp4/weights/best.pt')
+filePath = r"C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/yolov5/runs/train/exp2/weights/best.pt"
+model = torch.hub.load('ultralytics/yolov5', 'custom', path= filePath)
 print(model.names)  # 클래스 이름 출력
-
+# {0: 'angry', 1: 'disgust', 2: 'fear', 3: 'happy', 4: 'neutral', 5: 'sad', 6: 'surprise'}
 
 # 예측
 # 모델 로드
@@ -113,7 +118,8 @@ import torch
 # 모델 로드
 # 'custom' 사용은 사용자 정의 모델 가중치를 로드할 때 필요합니다.
 # 'best.pt'는 학습 과정에서 가장 좋은 성능을 보인 모델의 가중치 파일입니다.
-model = torch.hub.load('ultralytics/yolov5', 'custom', path= r'C:/Users/medit/Desktop/WorkSpace/pythonProject/yolov5/runs/train/exp4/weights/best.pt')
+filePath = r"C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/yolov5/runs/train/exp3/weights/best.pt"
+model = torch.hub.load('ultralytics/yolov5', 'custom', path= filePath)
 
 # 이미지 로드 및 예측
 img = r'C:/Users/medit/Desktop/WorkSpace/pythonProject/Practicom/test1.jpg'  # 예측할 이미지의 경로
@@ -132,3 +138,80 @@ for det in results.xyxy[0]:  # per image
     class_name = model.names[class_id]
     print(f'Detected class: {class_name}')
 
+
+# 평가
+import torch
+import os
+import numpy as np
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+# %matplotlib inline  # 주피터 노트북에서 그림을 인라인으로 표시하기 위해 필요합니다
+
+# Load the YOLOv5 model
+filePath = r"face_recog_code/face_best.pt"
+model = torch.hub.load('ultralytics/yolov5', 'custom', path=filePath, force_reload=True)
+
+# Path to validation images and labels
+val_path = r'C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/face_recog_code/feelingdata/test'
+label_mapping = {0: 'angry', 1: 'disgust', 2: 'fear', 3: 'happy', 4: 'neutral', 5: 'sad', 6: 'surprise'}
+
+# Get list of image files in the validation folder
+image_files = [os.path.join(val_path, f) for f in os.listdir(val_path) if f.endswith(('.png', '.jpg', '.jpeg'))]
+
+# Placeholder for predictions (listA) and ground truths (listB)
+listA = []
+listB = []
+
+# Function to get ground truth label from corresponding text file
+def get_ground_truth_from_txt(file_path):
+    with open(file_path, 'r') as file:
+        label = int(file.readline().strip().split()[0])
+    return label_mapping[label]
+
+# Run inference on all validation images
+results = model(image_files)
+
+# Process each image and its corresponding ground truth
+for img_path in image_files:
+    # Get prediction for the current image
+    pred = results.pandas().xyxy[image_files.index(img_path)]
+    # Assuming the highest confidence prediction is the label (you can adjust based on your requirement)
+    if len(pred) > 0:
+        pred_class = int(pred.iloc[0]['class'])  # Get the predicted class
+        print(f"Image: {img_path}, Predicted Class: {pred_class}")
+        listA.append(pred_class)
+    else:
+        print(f"Image: {img_path}, No detection made.")
+        listA.append(-1)  # Append -1 or any invalid class if no detection is made
+
+    # Get the corresponding ground truth label
+    txt_file_path = os.path.splitext(img_path)[0] + '.txt'
+    if os.path.exists(txt_file_path):
+        gt_class = get_ground_truth_from_txt(txt_file_path)
+        print(f"Image: {img_path}, Ground Truth Class: {gt_class}")
+        listB.append(gt_class)
+    else:
+        print(f"Image: {img_path}, Ground Truth File not found.")
+        listB.append('unknown')  # Handle case where ground truth file doesn't exist
+
+# Filter out invalid entries
+valid_indices = [i for i in range(len(listA)) if listA[i] != -1 and listB[i] != 'unknown']
+listA = [listA[i] for i in valid_indices]
+listB = [listB[i] for i in valid_indices]
+
+# Convert listB to indices to match the predictions
+listB = [list(label_mapping.values()).index(label) for label in listB]
+
+# Compute confusion matrix
+cm = confusion_matrix(listB, listA, labels=list(label_mapping.keys()))
+
+# Display the confusion matrix
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=list(label_mapping.values()))
+disp.plot(cmap=plt.cm.Blues)
+plt.show()
+
+# Save the confusion matrix to a file
+output_path = r'C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/confusion_matrix.png'
+plt.savefig(output_path)
+plt.close()  # Close the plot to avoid displaying it

@@ -1,0 +1,29 @@
+# YOLOv5 하이퍼파라미터 (hyp.scratch-low.yaml)
+lr0: 0.01  # 초기 학습률
+lrf: 0.2  # 최종 학습률 (초기 학습률의 비율)
+momentum: 0.937  # 모멘텀
+weight_decay: 0.0005  # 가중치 감소 (L2 정규화)
+warmup_epochs: 3.0  # 웜업 에포크 수
+warmup_momentum: 0.8  # 웜업 동안 모멘텀
+warmup_bias_lr: 0.1  # 웜업 동안 바이어스 학습률
+box: 0.05  # 객체 상자 (bounding box) 손실 기여
+cls: 0.5  # 클래스 손실 기여
+cls_pw: 1.0  # 클래스 손실 가중치
+obj: 1.0  # 객체 손실 기여
+obj_pw: 1.0  # 객체 손실 가중치
+iou_t: 0.2  # IoU 임계값
+anchor_t: 4.0  # 앵커 임계값
+fl_gamma: 0.0  # 초점 손실 감마
+hsv_h: 0.015  # 색조 변화
+hsv_s: 0.7  # 채도 변화
+hsv_v: 0.4  # 밝기 변화
+degrees: 0.0  # 회전 변화
+translate: 0.1  # 이동 변화
+scale: 0.5  # 크기 변화
+shear: 0.0  # 기울기 변화
+perspective: 0.0  # 원근 변화
+flipud: 0.0  # 상하 뒤집기
+fliplr: 0.5  # 좌우 뒤집기
+mosaic: 1.0  # 모자이크
+mixup: 0.0  # 믹스업
+copy_paste: 0.0  # 복사 붙여넣기
