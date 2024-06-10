@@ -145,44 +145,46 @@ def train_model(model, optimizer, train_loader, loss_fn, num_epochs=3):
 
 def main():
     # 설정된 경로에 따라 데이터 로드
-    train_path = r'C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/sentences/감성대화말뭉치(최종데이터)_Training.xlsx'
-    test_path = r'C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/sentences/감성대화말뭉치(최종데이터)_Validation.xlsx'
-    # 설정된 경로에 따라 데이터 로드
-    print("Loading data...")
-    train_df, test_df = load_data(train_path, test_path)
+    # train_path = r'C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/sentences/감성대화말뭉치(최종데이터)_Training.xlsx'
+    # test_path = r'C:/Users/luisf/OneDrive/desktop/WorkSpace/Sogang_AI_MBA_Project/Sogang_AI_MBA_PythonProj/Practicom/sentences/감성대화말뭉치(최종데이터)_Validation.xlsx'
+    # # 설정된 경로에 따라 데이터 로드
+    # print("Loading data...")
+    # train_df, test_df = load_data(train_path, test_path)
 
     print("Preparing tokenizer and label encoder...")
     tokenizer = BertTokenizer.from_pretrained('klue/bert-base')
-    label_encoder = LabelEncoder()
-    y_train_encoded = label_encoder.fit_transform(train_df['감정_대분류'])
-    y_test_encoded = label_encoder.transform(test_df['감정_대분류'])
+    # label_encoder = LabelEncoder()
+    # y_train_encoded = label_encoder.fit_transform(train_df['감정_대분류'])
+    # y_test_encoded = label_encoder.transform(test_df['감정_대분류'])
 
-    print("Tokenizing and preparing data loaders...")
-    X_train_ids, X_train_masks = tokenize_and_encode(train_df['사람문장1'], tokenizer)
-    X_test_ids, X_test_masks = tokenize_and_encode(test_df['사람문장1'], tokenizer)
-
-    train_data = TensorDataset(X_train_ids, X_train_masks, torch.tensor(y_train_encoded).long())
-    test_data = TensorDataset(X_test_ids, X_test_masks, torch.tensor(y_test_encoded).long())
-    train_loader = DataLoader(train_data, batch_size=32*16)
-    test_loader = DataLoader(test_data, batch_size=32*16)
-
-    print("Initializing model and optimizer...")
-    model, optimizer = init_model_and_optimizer(len(label_encoder.classes_))
-
-    print("Starting training process...")
-    train_model(model, optimizer, train_loader, nn.CrossEntropyLoss(), num_epochs=3)
-
-    print("Evaluating model...")
-    evaluate_model(model, test_loader, y_test_encoded, label_encoder)
-
-    print("Saving model...")
-    save_model(model, optimizer, label_encoder, 'bert_sentiment_model.pth')
+    # print("Tokenizing and preparing data loaders...")
+    # X_train_ids, X_train_masks = tokenize_and_encode(train_df['사람문장1'], tokenizer)
+    # X_test_ids, X_test_masks = tokenize_and_encode(test_df['사람문장1'], tokenizer)
+    #
+    # train_data = TensorDataset(X_train_ids, X_train_masks, torch.tensor(y_train_encoded).long())
+    # test_data = TensorDataset(X_test_ids, X_test_masks, torch.tensor(y_test_encoded).long())
+    # train_loader = DataLoader(train_data, batch_size=32*16)
+    # test_loader = DataLoader(test_data, batch_size=32*16)
+    #
+    # print("Initializing model and optimizer...")
+    # model, optimizer = init_model_and_optimizer(len(label_encoder.classes_))
+    #
+    # print("Starting training process...")
+    # train_model(model, optimizer, train_loader, nn.CrossEntropyLoss(), num_epochs=3)
+    #
+    # print("Evaluating model...")
+    # evaluate_model(model, test_loader, y_test_encoded, label_encoder)
+    #
+    # print("Saving model...")
+    # save_model(model, optimizer, label_encoder, 'bert_sentiment_model.pth')
 
     print("Loading model...")
     model, optimizer, label_encoder = load_model('bert_sentiment_model.pth')
 
     print("Running prediction...")
-    input_text = "오늘 정말 행복한 날이네요!"
+    # input_text = "오늘 사장님께 칭찬받아서 매우 기뻐."
+    input_text = "좀 쉬자! 보고 끝낸지 얼마나 되었다고... 나 좀 그만 찾아줘"
+    # input_text = "직장에 다니고 있지만 시간만 버리는 거 같아. 진지하게 진로에 대한 고민이 생겨."
     predicted_emotion = predict_sentiment(input_text, model, tokenizer, label_encoder)
     print("Predicted Emotion:", predicted_emotion)
 
