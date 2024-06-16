@@ -1,4 +1,5 @@
 #터미널에서 python MovieRatingData.py 100 실행
+#파이참 터미널로 실행하지 않으면 sys.argv[1]이 지정되지 않기 때문에 오류 발생함
 
 import time
 from datetime import datetime
