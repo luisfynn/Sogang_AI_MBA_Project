@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Result</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width : 100%;
+        }
+
+        td, th {
+            border: 1px solid;
+            text-align:left;
+            padding: 8px
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center;">2010년 6세 Statistics_Weight_by_Gender</h1>
+    <table>
+        <tr>
+            <th>Gender</th>
+            <th>Average weight</th>
+            <th>Variance weight</th>
+            <th>Standard deviation weight</th>
+        </tr>
+        {% for result in context %}
+        <tr>
+            <td>{{ result[0] }}</td>
+            <td>{{ result[1] }}</td>
+            <td>{{ result[2] }}</td>
+            <td>{{ result[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
