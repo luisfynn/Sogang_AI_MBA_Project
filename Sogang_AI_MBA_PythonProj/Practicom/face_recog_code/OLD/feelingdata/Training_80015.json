@@ -1,0 +1,28 @@
+{
+  "version": "5.4.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "happy",
+      "points": [
+        [
+          1.6499999999999986,
+          0.8999999999999986
+        ],
+        [
+          47.00000000000001,
+          46.44421841541756
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "rectangle",
+      "flags": {},
+      "mask": null
+    }
+  ],
+  "imagePath": "Training_80015.jpg",
+  "imageData": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAAwADABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/APQPEvhS1i8OzRyyl/M2pnpzkf4GsTT9MtbWAJDEqgDsKwvEVusEqTomcHn3FY9/pDC1GpWsokgcdkzge/PUdKNKdYxGZbleuRGX6n37AV1C3906lY7m3htAN0kmDu9+vQfzruvGN3FLYW6RTKxE2WUH/ZNcss6Rx7nkCjOOTUjRWt9CyOFdSKNP0u0tQ1uyhoZPvI3INcVrXh2XTdZaG1SSSGX5o5ACePT6jpXQ6PZy6RHAs13HbtM2G3puJ9Bkggf1q7qVykdm0/2di4YZMfzZ9SPb261y+u+eIotVtJXkUJ8iIu7k9wPWrHhuHV51N3qN46o33bdTkAe59faurjV3XbjkVehBkRRMvzIcg1FcwRXE/mzZTYmFPQHB/I0xPB7tFEs12qCJSqiNenP6/jWRLp9ro+lPbwlp4oWYK8xALck9sDPpRY6la+WmMDjhSMGt6zkjmG4dKszFVwVPNU2sQXMjSOwByqFuFz3xWrPO6xEqcnHavN/EMV1a3H2yS0kuoI8mNCu7Yx/l9arvpWpzPH9ovliumw/2aBFPlL6s3btx3rqoJ/KVMegzV5ZWlYYrRiXKAHrVWCLUpY9lxJAjAY+XJzXnfxL1ifw1bwxRSyvf3LfKv8IjHU4Hr0rY8JSLeaLDdqhQXCiRt/XPua3HjiJ+XoOtWoJY0QetXLeXc2T0Nf/Z",
+  "imageHeight": 48,
+  "imageWidth": 48
+}

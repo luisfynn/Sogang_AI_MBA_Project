@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Page</title>
+    <!-- 부트스트랩 및 jQuery 스크립트 링크 추가 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Chart.js 링크 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- 배너 영역 -->
+    <div class="container-fluid bg-custom py-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center position-relative">
+                    <h1 class="hawkai-text"> Hawk AI </h1><br>
+                    <img src="{{ url_for('static', filename='istockphoto-1282555139-1024x1024.jpg') }}" alt="Title Image" class="title-image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- 네비게이션 바 -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <div class="navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('upload_filePushUp') }}">Pushup</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('upload_fileSquart') }}">Squat</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('face_emotion') }}">새벽 기상</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('diary') }}">감정 일기</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('meal') }}">식단 관리</a>
+                </li>
+            </ul>
+        </div>
+        <div class="navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+    <h2 class="text-center">Dashboard</h2>
+    <div class="container mt-4">
+        <br>
+        <div class="flex-container">
+            <div class="container md-auto">
+                <div class="calendar" id="calendar-container">
+                    <div id="calendar-controls" class="calendar-controls mb-3">
+                        <div class="btn-group">
+                            <button class="btn btn-custom-updown btn-sm" onclick="changeYear(-1)">◀</button>
+                            <span id="year"></span>
+                            <button class="btn btn-custom-updown btn-sm" onclick="changeYear(1)">▶</button>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-custom-updown btn-sm" onclick="changeMonth(-1)">◀</button>
+                            <span id="month"></span>
+                            <button class="btn btn-custom-updown btn-sm" onclick="changeMonth(1)">▶</button>
+                        </div>
+                    </div>
+                <div id="calendar"></div>
+            </div>
+        </div>
+            <div class="col-md-8">
+                <div class="notes">
+                    <h4>Notes</h4>
+                    <!-- 문구를 넣을 수 있는 공간 -->
+                    <br><br>
+                    <p>이번 달 {{ current_username }}님은 7시 이전 기상 목표를 <span id="earlyWakeCount"></span>번 달성 중이에요!</p><br>
+                    <p>하루 평균 <span id="averageCalories"></span> kcal를 섭취하셨네요</p><br>
+                    <p>스쿼트 목표 <span id="countSquat"></span>번, 푸쉬업 목표 <span id="countPushUp"></span>번 달성 중이시네요! </p><br>
+                    <p>최근 가장 많이 남긴 감정은 <span id="maxEmotion"></span>에요 </p><br>
+
+                </div>
+            </div>
+        </div>
+        <br><br>
+        <div class="row">
+            <!-- 차트 -->
+            <div class="col-md-12">
+                <h2>My Chart</h2>
+                <div id="chart" class="chart-container"></div>
+                <div id="chart-buttons">
+                    <button class="btn-custom btn-lg" onclick="updateChart('새벽 기상')">새벽 기상</button>
+                    <button class="btn-custom btn-lg" onclick="updateChart('식단 관리')">식단 관리</button>
+                    <button class="btn-custom btn-lg" onclick="updateChart('운동')">운동</button>
+                    <button class="btn-custom btn-lg" onclick="updatePieChart()">하루일기</button>
+                </div>
+                <canvas id="myChart" width="400" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+    <br><br>
+
+
+    <script>
+        let today = new Date();
+        let currentMonth = today.getMonth();
+        let currentYear = today.getFullYear();
+        const todayDate = today.getDate();
+
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+                            "July", "August", "September", "October", "November", "December"];
+
+        function generateCalendar(year, month) {
+            const calendar = document.getElementById('calendar');
+            const yearElement = document.getElementById('year');
+            const monthElement = document.getElementById('month');
+
+            yearElement.textContent = year;
+            monthElement.textContent = monthNames[month];
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+
+            let calendarHTML = '<table class="table table-bordered">';
+            calendarHTML += '<thead><tr>';
+            calendarHTML += '<th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>';
+            calendarHTML += '</tr></thead><tbody><tr>';
+
+            for (let i = 0; i < firstDay; i++) {
+                calendarHTML += '<td style="border: 1px solid #ccc;"></td>';
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                if ((day + firstDay - 1) % 7 === 0 && day !== 1) {
+                    calendarHTML += '</tr><tr>';
+                }
+                let dayOfWeek = (day + firstDay - 1) % 7;
+                let cellClass = "";
+                if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+                    cellClass = "today";
+                }
+
+                if (dayOfWeek === 0) {
+                    calendarHTML += `<td class="${cellClass}" style="color: red; position: relative;">${day}</td>`;
+                } else if (dayOfWeek === 6) {
+                    calendarHTML += `<td class="${cellClass}" style="color: blue; position: relative;">${day}</td>`;
+                } else {
+                    calendarHTML += `<td class="${cellClass}" style="position: relative;">${day}</td>`;
+                }
+            }
+
+            calendarHTML += '</tr></tbody></table>';
+            calendar.innerHTML = calendarHTML;
+        }
+
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            generateCalendar(currentYear, currentMonth);
+        }
+
+        function changeYear(delta) {
+            currentYear += delta;
+            generateCalendar(currentYear, currentMonth);
+        }
+
+        window.onload = function() {
+            generateCalendar(currentYear, currentMonth);
+            updateChart('새벽 기상'); // 새벽 기상 차트도 함께 그리도록 추가
+        };
+    </script>
+
+    <script>
+const generateRandomDataInRange = (length, min, max) => {
+    const data = [];
+    for (let i = 0; i < length; i++) {
+        data.push(Math.floor(Math.random() * (max - min + 1)) + min); // 최소값과 최대값 사이의 무작위 값 생성
+    }
+    return data;
+};
+
+const chartData = {
+    "새벽 기상": generateRandomDataInRange(30, 5, 9), // 7 전후의 무작위 값 생성,
+    "식단 관리": {
+        "칼로리": generateRandomDataInRange(30, 1800, 2200), // 2000 전후의 무작위 값 생성
+        "탄수화물": generateRandomDataInRange(30, 250, 350), // 300 전후의 무작위 값 생성
+        "단백질": generateRandomDataInRange(30, 50, 70), // 60 전후의 무작위 값 생성
+        "지방": generateRandomDataInRange(30, 30, 50) // 40 전후의 무작위 값 생성
+    },
+    "운동": {
+        "스쿼트": generateRandomDataInRange(30, 15, 40),
+        "푸쉬업": generateRandomDataInRange(30, 15, 40)
+    },
+    "긍정일기": {
+        "행복": Math.floor(Math.random() * 21), // 총합 30 이내의 무작위 값 생성,
+        "분노": Math.floor(Math.random() * 16), // 총합 30 이내의 무작위 값 생성,
+        "슬픔": Math.floor(Math.random() * 11), // 총합 30 이내의 무작위 값 생성,
+        "상처": Math.floor(Math.random() * 6) // 총합 30 이내의 무작위 값 생성
+    }
+};
+// 초기 차트 설정
+    const ctx = document.getElementById('myChart').getContext('2d');
+    let myChart;
+
+// 차트 업데이트 함수
+
+function updateChart(dataLabel) {
+    if (myChart) {
+        myChart.destroy(); // 이전 차트 삭제
+    }
+
+    const ctx = document.getElementById('myChart').getContext('2d');
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array.from({ length: 30 }, (_, i) => i + 1), // 1일부터 30일까지
+            datasets: []
+        },
+        options: {
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '값'
+                    }
+                }
+            }
+        }
+    });
+
+    if (dataLabel === "새벽 기상") {
+        myChart.data.datasets.push({
+            label: '새벽 기상',
+            data: chartData["새벽 기상"],
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+        });
+    } else if (dataLabel === "식단 관리") {
+        // 각 영양 성분에 대한 데이터셋을 추가하여 한 그래프 안에서 다른 선으로 표시
+        const nutrients = Object.keys(chartData["식단 관리"]);
+        nutrients.forEach((nutrient, index) => {
+            const color = ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)'][index];
+            myChart.data.datasets.push({
+                label: nutrient,
+                data: chartData["식단 관리"][nutrient],
+                backgroundColor: color,
+                borderColor: color.replace('0.2', '1'),
+                borderWidth: 1,
+            });
+        });
+    } else if (dataLabel === "운동") {
+        // 운동 데이터셋에 대한 각 운동별 데이터셋을 추가하여 다른 선으로 표시
+        const exercises = Object.keys(chartData["운동"]);
+        exercises.forEach((exercise, index) => {
+            const color = ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)'][index]; // 스쿼트와 푸쉬업에 대한 색 지정
+            myChart.data.datasets.push({
+                label: exercise,
+                data: chartData["운동"][exercise],
+                backgroundColor: color,
+                borderColor: color.replace('0.2', '1'),
+                borderWidth: 1,
+            });
+        });
+    }
+
+    myChart.update();
+}
+
+function getRandomColor() {
+    return 'rgba(' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',0.5)';
+}
+// 차트 업데이트 함수 (긍정일기 - 원 차트)
+    function updatePieChart() {
+        if (myChart) {
+            myChart.destroy(); // 이전 차트 삭제
+        }
+
+    const ctx = document.getElementById('myChart').getContext('2d');
+    myChart = new Chart(ctx, {
+        type: 'doughnut', // 원 차트 유형 설정
+        data: {
+            labels: Object.keys(chartData["긍정일기"]),
+            datasets: [{
+                label: '',
+                data: Object.values(chartData["긍정일기"]),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.5)',
+                    'rgba(54, 162, 235, 0.5)',
+                    'rgba(255, 206, 86, 0.5)',
+                    'rgba(75, 192, 192, 0.5)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+            options: {
+                aspectRatio: 2.5,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 0
+                    }
+                }
+            }
+    });
+}
+
+
+
+    </script>
+    <script>
+    $(document).ready(function() {
+        // 평균 칼로리를 계산하는 함수
+        function calculateAverageCalories(calories) {
+            const sum = calories.reduce((a, b) => a + b, 0);
+            const average = sum / calories.length;
+            return Math.round(average); // 반올림하여 정수로 반환
+        }
+
+    // 칼로리 데이터 가져오기
+    const calories = chartData["식단 관리"]["칼로리"];
+
+    // 스쿼트와 푸쉬업 달성 횟수 계산
+    const countSquat = chartData["운동"]["스쿼트"].filter(count => count >= 30).length;
+    const countPushUp = chartData["운동"]["푸쉬업"].filter(count => count >= 30).length;
+
+    // 새벽 기상 목표 달성 횟수 계산
+    const earlyWakeCount = chartData["새벽 기상"].filter(count => count < 7).length;
+    $('#earlyWakeCount').text(earlyWakeCount);
+
+    // 평균 칼로리 계산 및 표시
+    const averageCalories = calculateAverageCalories(calories);
+    $('#averageCalories').text(averageCalories);
+
+    // 스쿼트와 푸쉬업 목표 달성 횟수 표시
+    $('#countSquat').text(countSquat);
+    $('#countPushUp').text(countPushUp);
+
+    });
+
+
+    $(document).ready(function() {
+        const eyeBall = (event, eye) => {
+            const pupil = eye.querySelector('.pupil');
+            const eyeRect = eye.getBoundingClientRect();
+            const eyeX = eyeRect.left + eyeRect.width / 2;
+            const eyeY = eyeRect.top + eyeRect.height / 2;
+            const deltaX = event.pageX - eyeX;
+            const deltaY = event.pageY - eyeY;
+            const angle = Math.atan2(deltaY, deltaX);
+            const radius = eyeRect.width / 4; // 눈동자가 움직일 수 있는 반경
+
+            const pupilX = radius * Math.cos(angle);
+            const pupilY = radius * Math.sin(angle);
+
+            pupil.style.transform = `translate(${pupilX}px, ${pupilY}px)`;
+        };
+
+        $(document).on('mousemove', function(event) {
+            $('.eye').each(function() {
+                eyeBall(event, this);
+            });
+        });
+    });
+
+    // 최대 값 찾기 함수
+    function findMaxEmotion(emotions) {
+        let maxEmotion = "";
+        let maxCount = 0;
+
+        // 감정 객체를 순회하며 최대 값 찾기
+        for (const [emotion, count] of Object.entries(emotions)) {
+            if (count > maxCount) {
+                maxEmotion = emotion;
+                maxCount = count;
+            }
+        }
+
+        return maxEmotion;
+}
+
+    // 최대 값을 가진 감정 찾기
+    const maxEmotion = findMaxEmotion(chartData["긍정일기"]);
+
+    // 결과 표시
+    $('#maxEmotion').text(maxEmotion);
+    </script>
+
+    <!-- JavaScript 링크 추가 (부트스트랩 및 jQuery) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Chart.js 링크 추가 -->
+    <script src=C:\pythonProjectP\chart\chart.js></script>
+
+</body>
+</html>

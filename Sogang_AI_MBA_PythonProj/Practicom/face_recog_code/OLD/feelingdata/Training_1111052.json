@@ -1,0 +1,28 @@
+{
+  "version": "5.4.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "neutral",
+      "points": [
+        [
+          1.0,
+          0.8999999999999986
+        ],
+        [
+          46.7,
+          47.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "rectangle",
+      "flags": {},
+      "mask": null
+    }
+  ],
+  "imagePath": "Training_1111052.jpg",
+  "imageData": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAAwADABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/ANxbZYVV9W8RWMdzE+JLhUN7OT672BSPIBwFjGKj1XU9D06BYDqWqajDcIypaKlxKZDncNiYVTxjqccZqaPU7rwt4fTU5PDd9cvcnderbyiSa3YcIjKeqqm1eOBg8c5rCHxvsWuBDB4b1SSQnATcu7P0ANbkPj6eWQNdeD9ZsVkwPOlixuHYZwM9TwfXj0q1qE0tnFqbRia5Op2001rCsWx96rny/djuJBPPGOcVy+pfGrTLO+TTfDOhG/Afyo3z5SyHG0bFAyeuOcZrQ0NdSg1GLXvGtvDo9um6Cxs4FO23aTAMsxBJXIAUFjjn+HjPZeINYHh6JJbaymvdQv5xDb2sTbRJJtJyW/hAVck+grKvvHiWUuoBdPnkNgQtw8SNJtJHBJ+UAEggZbJx0Fafh/Xr3WW/e6aI7V0ZhOsynkEYVlBPUHIwT0NM1y0upZLWS1eFUgeTzjK23YpXhxgHlSAcd+a+Z/BGr3WkeKLd7KG3e6uf9Fiedc+S0mFDqexBOfpkV7jpnw6ktLmCy1O8ur5ZFAuWW3zE7bsszuSN2emGDnn6Y7HRoIrzw9p6zAl7QmMMTlleJmjzk98Ag+ua0Z7KC4jZXQqWUKZEO18Dp8w54ycemTTra2isrcRRb9gySXkaRie5JYkk1WkVZUZXUMrAggjIIrwXQPhLfXp1jUYL9IZtMup4bW3VSXeaLlMk8AH5fU89q950LWYPEWg2WsW/C3UYZ17xydHU+4YEVW0hoLhdYt7W9VtuoSnMDDdCzBSQc9Du31DJrb391bx6SLhjFeRJcmW0dI5ImDbirMBkADdkdwBzuraE8LzyWwkHnIgZk7hTnB+nB5quylSQeormNK1SPQfCl74jvoXil1S7a7htG4dmcKkMQH94qik+mT6VgfDu9udC8Sz6BqFz5q6ujX8LdFW5HMyL7Ecj/dro9Q8KWMljPq8l5N4e1a7hT7Xe2dyYl39TuBO1uePU+tS6Nq1vpOj22n20uteIniB8y9ht2lDMSSd0jEKOvTccDFWdO8QXutXcbWGiTRWaSmOe6vXRAy9/J2s2/nHP3Tg85rZuPv8A4V89ap8QFur5te1C2uZ55CRpcDyDy4YR8pbjgOSDk4z6cYrmI/GmtXXibTtUJZmsZxPFBCvCgHLDHU5AIJPavpO/0TQfE0Vrr6R3E0nlpcWVzbTssiADK7BnaDzgjHJ61wd94l8BR6r5eqaz4j164ifAs7vzJI1cHoYiEUnPYg16VoN7f6hp32u+08aesjZt7Zj+8SLHy+Z2DHrtHQYHWn6tfWumWk17eTLDbwRl5JG6AV//2Q==",
+  "imageHeight": 48,
+  "imageWidth": 48
+}

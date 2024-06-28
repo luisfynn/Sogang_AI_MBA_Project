@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Result</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width : 100%;
+        }
+
+        td, th {
+            border: 1px solid;
+            text-align:left;
+            padding: 8px
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center;">{{title}}</h1>
+    <table>
+        <tr>
+            <th>Gender</th>
+            <th>Max Region</th>
+            <th>Min Region</th>
+        </tr>
+        {% for result in context %}
+        <tr>
+            <td>{{ result[0] }}</td>
+            <td>{{ result[1] }}</td>
+            <td>{{ result[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "version": "5.4.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "angry",
+      "points": [
+        [
+          1.4499999999999957,
+          1.0999999999999979
+        ],
+        [
+          46.65,
+          46.2
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "rectangle",
+      "flags": {},
+      "mask": null
+    }
+  ],
+  "imagePath": "Training_3074482.jpg",
+  "imageData": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAAwADABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/APEpZDI7PIxZySzMe/vXsfg34OyXOn6dq99d26i6gLy2s1sXaMNypU5ADYx16ZNekab8M/CNhaLE2i2t1IeXmuU3Mx7n0H0HSr48EeFAmweHNL2+n2Zaoap8NfCWqWM1uNFs7WV0KpcQRbGjPZhjGcfrXzHcw3Wg69NAJGju7C5ZQ44KsjcH9M1nxo0kqIqlmZgoUdSSelfX2o+JdC0COOLVNVs7N1jX91JKA+OB90c1Dp3jjwzql0bew1iC5lVVYrHk/eYKOo65IGK27m9tLLZ9qureDe21fNlVNx9Bk1Ba6pp9/LJHZ39rcvGSHWGZXK/UA18u/E7/AJKVr/GP9Kz/AOOrWb4St4rrxhokE67opL6FXHqN44r2T4qeDprjTbzU7e10cBf39xfThxdO3TAIGMYwAOmB681yPwe8HXOseIotauYZk02xbzEflRLMD8qj1APJ+grV+NHgzVH1b/hIbVJbuylAWWKOMsbdgoBYgdmx1x1HNS/CvwRMr2esXOl2dxC7Fo72K+dJbZh0BjwA3PUe/wCFct8Z4Io/iNeyROzb4ofMyOFfYPl/Lafxqt8JhpDePLQ6vIkYRS9sZDhTMCNoJ/l7gV9I63q1roWi3mp3zbbe3jLOD/F6KPcnA/GuS+H/AIlvNS0afWNcvbS0tryaRrC0ICCKKP72D/EP8Ce9WfGfjMaT4c/tvQ761uxaXUIuIoyJFkjfI2kj7p7g+1dJoetWfiTRrbVdPkL2869G+8hHVT7g14l8ensRrmmQ2/k/avKeS6CH5snaFLe+F49hXk9vOba6huAATFIsgB74IP8ASvpD4gKnimPwhZKZJrDVbsyyRROF81RF5ijJ6Drk9qiu9BuviD4QTTZ5F0K4sZ2STT0i3CLbkRgk8kEYO4cEduKS18Max4Q8LRaNaLa69FeT+XLYSwlFMbD528zPygYzkjvUnwvtf+EY0nxTDey+XY6fqcoAZt3loiAsc9+MfWvnnWNQfVtZvtRfhrq4ebGMY3MTW7P8OvES7BDbwTubdLhkjnTem7ohGc7uDx3CsR0Net+AdU0zRtQt/CGr3cMuo2EUcthPIykAzRK0kSMOOCTjnkGu91qLWnaFtITSyRkSG9V8+nylf5VY0ePWI7d11iaxkl3fIbSJkUL77ia8O+LHjdPtmoeFtHiSG2efzdQnRstPLgZXjoBgZ9cV5zpOgajraE6fFHKVmjhKeaqsGckKcH+Hg5PQYr//2Q==",
+  "imageHeight": 48,
+  "imageWidth": 48
+}

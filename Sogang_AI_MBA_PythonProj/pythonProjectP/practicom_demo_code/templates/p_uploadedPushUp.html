@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <title>Upload Files</title>
+</head>
+<body>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- 배너 영역 -->
+    <div class="container-fluid bg-custom py-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center position-relative">
+                    <h1 class="hawkai-text"> Hawk AI </h1><br>
+                    <img src="{{ url_for('static', filename='istockphoto-1282555139-1024x1024.jpg') }}" alt="Title Image" class="title-image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- 네비게이션 바 -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <div class="navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('pushup_uploaded_files_list') }}">Pushup Upload</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('squart_uploaded_files_list') }}">Squat Upload</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('face_emotion') }}">새벽 기상</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('diary') }}">감정 일기</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('meal') }}">식단 관리</a>
+                </li>
+            </ul>
+        </div>
+        <div class="navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav><br>
+
+    <h1>Push Up Uploads</h1>
+    <ul>
+        {% for file_url in files %}
+            {% if file_url.endswith('.jpg') %}
+                <!-- JPG 파일에 대해 이미지 태그를 사용 -->
+                <li>
+                    <img src="{{ file_url }}" alt="Uploaded Files" style="max-width: 300px; max-height: 300px;">
+                    <span>점수: 90</span> <!-- 임의의 점수를 표시 -->
+                </li>
+            {% elif file_url.endswith('.mp4') %}
+                <!-- MP4 파일에 대해 video 태그를 사용 -->
+                <li>
+                    <video controls style="max-width: 300px; max-height: 300px;">
+                        <source src="{{ file_url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                        <span>점수: 80</span> <!-- 임의의 점수를 표시 -->
+                    </video>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</body>
+</html>

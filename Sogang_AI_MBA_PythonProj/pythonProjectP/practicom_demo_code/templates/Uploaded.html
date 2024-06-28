@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <title>Upload Image</title>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- 배너 영역 -->
+    <div class="container-fluid bg-custom py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h1 class="text-white display-4"> Hawk AI </h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 네비게이션 바 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('schedule_file') }}">로고</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">홈 <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">기능 1</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('my_page') }}">my page</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <h1>Uploaded Files</h1>
+    <ul>
+        {% for file_url in files %}
+            {% if file_url.endswith('.jpg') %}
+                <!-- JPG 파일에 대해 이미지 태그를 사용 -->
+                <li>
+                    <img src="{{ file_url }}" alt="Uploaded Image" style="max-width: 300px; max-height: 300px;">
+                    <span>점수: 90</span> <!-- 임의의 점수를 표시 -->
+                </li>
+            {% elif file_url.endswith('.mp4') %}
+                <!-- MP4 파일에 대해 video 태그를 사용 -->
+                <li>
+                    <video controls style="max-width: 300px; max-height: 300px;">
+                        <source src="{{ file_url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                        <span>점수: 80</span> <!-- 임의의 점수를 표시 -->
+                    </video>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</body>
+</html>
